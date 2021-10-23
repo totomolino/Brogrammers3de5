@@ -30,8 +30,9 @@ IF OBJECT_ID ('brog.Tarea', 'U') IS NOT NULL
 GO
 CREATE TABLE [brog].[Tarea] (
   [tare_id] int identity(1,1),
-  [tarea_tipo] nvarchar(255) NOT NULL,
-  [tarea_tiempo_estimado] int NOT NULL,
+  [tare_desc] nvarchar(255) NOT NULL,
+  [tare_tipo] nvarchar(255) NOT NULL,
+  [tare_tiempo_estimado] int NOT NULL,
   CONSTRAINT PK_Tarea PRIMARY KEY ([tare_id])
 )
 
@@ -81,11 +82,9 @@ IF OBJECT_ID ('brog.PaquetexViaje', 'U') IS NOT NULL
    DROP TABLE brog.PaquetexViaje; 
 GO
 CREATE TABLE [brog].[PaquetexViaje] (
-  [paqx_id] int,
-  [paqx_cantidad] Int NOT NULL,
   [paqx_viaje] int NOT NULL,
   [paqx_paquete] int NOT NULL,
-  CONSTRAINT PK_PaquetexViaje PRIMARY KEY ([paqx_id])
+  [paqx_cantidad] Int NOT NULL,
 );
 
 
@@ -172,14 +171,14 @@ IF OBJECT_ID ('brog.OtXtarea', 'U') IS NOT NULL
    DROP TABLE brog.OtXtarea; 
 GO
 CREATE TABLE [brog].[OtXtarea] (
-  [otxt_orden_trabajo] int NOT NULL,
-  [otxt_tarea] int NOT NULL,
-  [otxt_mecanico] int NOT NULL,
   [otxt_estado_tarea] nvarchar(255) NOT NULL,
   [otxt_fecha_inicio_estimada] datetime2(3) NOT NULL,
   [otxt_fecha_inicio] datetime2(3) NOT NULL,
   [otxt_fecha_fin] datetime2(3) NOT NULL,
-  [otxt_tiempo_real] int NOT NULL
+  [otxt_tiempo_real] int NOT NULL,
+  [otxt_orden_trabajo] int NOT NULL,
+  [otxt_tarea] int NOT NULL,
+  [otxt_mecanico] int NOT NULL
 )
 
 IF OBJECT_ID ('brog.Viaje', 'U') IS NOT NULL  
@@ -232,10 +231,10 @@ create procedure brog.migracionTareas
 as
 begin
 	insert into brog.Tarea
-	select distinct TIPO_TAREA,TAREA_TIEMPO_ESTIMADO from gd_esquema.Maestra where tipo_tarea <> 'null'
+	select distinct TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO from gd_esquema.Maestra where tipo_tarea <> 'null'
 
 end
-
+GO
 
 -- MIGRACION TALLER
 
@@ -250,7 +249,7 @@ begin
 	select distinct TALLER_DIRECCION,TALLER_TELEFONO,TALLER_MAIL,  TALLER_NOMBRE,TALLER_CIUDAD from gd_esquema.Maestra where TALLER_DIRECCION <> 'null'
 
 end
-
+GO
 
 -- MIGRACION RECORRIDO
 
@@ -265,7 +264,7 @@ begin
 	select distinct RECORRIDO_CIUDAD_DESTINO,RECORRIDO_CIUDAD_ORIGEN,RECORRIDO_PRECIO,RECORRIDO_KM from gd_esquema.Maestra where RECORRIDO_CIUDAD_DESTINO <> 'null'
 	
 end
-
+GO
 
 -- MIGRACION TIPO PAQUETE
 
@@ -277,10 +276,10 @@ create procedure brog.migracionTipoPaquete
 as
 begin
 	insert into brog.Tipo_paquete
-	select PAQUETE_DESCRIPCION, PAQUETE_PESO_MAX, PAQUETE_ALTO_MAX, PAQUETE_ANCHO_MAX, PAQUETE_LARGO_MAX, PAQUETE_PRECIO from gd_esquema.Maestra where PAQUETE_DESCRIPCION <> 'null'
+	select DISTINCT PAQUETE_DESCRIPCION, PAQUETE_PESO_MAX, PAQUETE_ALTO_MAX, PAQUETE_ANCHO_MAX, PAQUETE_LARGO_MAX, PAQUETE_PRECIO from gd_esquema.Maestra where PAQUETE_DESCRIPCION <> 'null'
 
 end
-
+GO
 
 -- MIGRACION CHOFER
 
@@ -294,7 +293,7 @@ begin
 	insert into brog.Chofer
 	select distinct CHOFER_NOMBRE, CHOFER_APELLIDO, CHOFER_DIRECCION,CHOFER_MAIL,CHOFER_NRO_LEGAJO,CHOFER_DNI,CHOFER_TELEFONO,CHOFER_FECHA_NAC,CHOFER_COSTO_HORA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
 end
-
+GO
 
 -- MIGRACION MODELO
 
@@ -309,6 +308,7 @@ begin
 	select distinct MODELO_CAMION, MARCA_CAMION_MARCA, MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
 	
 end
+GO
 
 -- MIGRACION CAMION
 
@@ -324,6 +324,7 @@ begin
 	from gd_esquema.Maestra join Modelo on mode_nombre = MODELO_CAMION
 	where CAMION_PATENTE <> 'null'
 end
+GO
 
 -- MIGRACION DE ORDEN DE TRABAJO
 
@@ -340,6 +341,7 @@ begin
 	where ORDEN_TRABAJO_FECHA <> 'NULL'
 	
 end
+GO
 
 -- MIGRACION MATERIAL POR TAREA
 
@@ -351,10 +353,17 @@ create procedure brog.migracionMaterialxTarea
 as
 begin
 	insert into brog.MaterialesXtarea
-	--select MATERIAL from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
-	
+	select mate_id,tare_id 
+	from gd_esquema.Maestra 
+	join Tarea on TAREA_DESCRIPCION = tare_desc
+	join Materiales on MATERIAL_DESCRIPCION = mate_descripcion
+	where MATERIAL_COD <> 'null'	
 end
+GO
 
+select TAREA_CODIGO,TAREA_DESCRIPCION,TAREA_FECHA_INICIO,TAREA_FECHA_FIN,COUNT(MATERIAL_COD) from gd_esquema.Maestra WHERE TAREA_DESCRIPCION <> 'NULL'
+GROUP BY TAREA_CODIGO,TAREA_DESCRIPCION,TAREA_FECHA_INICIO,TAREA_FECHA_FIN
+ORDER BY TAREA_DESCRIPCION
 -- MIGRACION MECANICO
 
 IF OBJECT_ID ('brog.migracionMecanico', 'P') IS NOT NULL  
@@ -370,62 +379,78 @@ begin
 	where CHOFER_NOMBRE <> 'null'
 	
 end
+GO
 
 -- MIGRACION ORDEN X TAREA
 
-IF OBJECT_ID ('brog.migracionModelo', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionModelo; 
+IF OBJECT_ID ('brog.migracionOrderxTarea', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionOrderxTarea; 
 GO
 
-create procedure brog.migracionModelo
+create procedure brog.migracionOrderxTarea
 as
 begin
-	insert into brog.Modelo
-	select distinct MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA,MARCA_CAMION_MARCA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
-	
+	insert into brog.OtXtarea
+	select distinct ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, ot_id, tare_id, meca_legajo 
+	from gd_esquema.Maestra
+	join Camion on CAMION_PATENTE = cami_patente 
+	join Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
+	join Tarea on TIPO_TAREA = tarea_tipo
+	join Mecanico on MECANICO_NRO_LEGAJO = meca_legajo
+	where ORDEN_TRABAJO_ESTADO <> 'null'	
 end
+GO
 
 -- MIGRACION VIAJE
 
-IF OBJECT_ID ('brog.migracionModelo', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionModelo; 
+IF OBJECT_ID ('brog.migracionViaje', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionViaje; 
 GO
 
-create procedure brog.migracionModelo
+create procedure brog.migracionViaje
 as
 begin
-	insert into brog.Modelo
-	select distinct MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA,MARCA_CAMION_MARCA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
+	insert into brog.Viaje
+	select distinct VIAJE_FECHA_INICIO,VIAJE_FECHA_FIN,VIAJE_CONSUMO_COMBUSTIBLE from gd_esquema.Maestra where VIAJE_FECHA_INICIO <> 'null'
 	
 end
+GO
 
 -- MIGRACION PAQUETE
 
-IF OBJECT_ID ('brog.migracionModelo', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionModelo; 
+IF OBJECT_ID ('brog.migracionPaquete', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionPaquete; 
 GO
 
-create procedure brog.migracionModelo
+create procedure brog.migracionPaquete
 as
 begin
-	insert into brog.Modelo
-	select distinct MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA,MARCA_CAMION_MARCA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
+	insert into brog.Paquete
+	select tipa_id 
+	from gd_esquema.Maestra join Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
+	where CHOFER_NOMBRE <> 'null'
 	
 end
+GO
 
 -- MIGRACION PAQUETE X VIAJE
 
-IF OBJECT_ID ('brog.migracionModelo', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionModelo; 
+IF OBJECT_ID ('brog.migracionPaquetexviaje', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionPaquetexviaje; 
 GO
 
-create procedure brog.migracionModelo
+create procedure brog.migracionPaquetexviaje
 as
 begin
-	insert into brog.Modelo
-	select distinct MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA,MARCA_CAMION_MARCA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
-	
+	insert into brog.Paquetexviaje
+	select viaj_id, paqu_id,sum(PAQUETE_CANTIDAD)
+	from gd_esquema.Maestra 
+	join Camion on CAMION_PATENTE = cami_patente
+	join Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
+	join Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
+	join Paquete on PAQUETE_DESCRIPCION = paqu_id	
 end
+GO
 
 
 IF OBJECT_ID('migracion','P') IS NOT NULL
@@ -436,150 +461,25 @@ GO
 create procedure brog.migracion 
 as
 begin
-
-    --MATERIALES
-    DECLARE @mate_id nvarchar(100)
-    DECLARE @mate_descripcion nvarchar(255)
-    DECLARE @mate_precio decimal(18,2)
-    
-    --TAREA
-        
-    DECLARE @tarea_tipo nvarchar(255)
-    DECLARE @tarea_tiempo_estimado int
-
-    --TALLER
-
-    DECLARE @tall_direccion nvarchar(255) 
-    DECLARE @tall_telefono decimal(18,0) 
-    DECLARE @tall_mail nvarchar(255) 
-    DECLARE @tall_nombre nvarchar(255) 
-    DECLARE @tall_ciudad varchar(255) 
-
-
-    --RECORRIDO
-
-    DECLARE @reco_ciudad_dest nvarchar(255) 
-    DECLARE @reco_ciudad_origen nvarchar(255) 
-    DECLARE @reco_precio decimal(18,2) 
-    DECLARE @reco_km int 
-
-
-
-
-    --TIPA
-    DECLARE @tipa_descripcion nvarchar(255) 
-    DECLARE @tipa_peso_max decimal(18,2) 
-    DECLARE @tipa_alto_max decimal(18,2) 
-    DECLARE @tipa_ancho_max decimal(18,2) 
-    DECLARE @tipa_largo_max decimal(18,2) 
-    DECLARE @tipa_precio decimal(18,2) 
-
-
-
-    --CHOFER
-    DECLARE @chof_nombre nvarchar(255) 
-    DECLARE @chof_apellido nvarchar(255) 
-    DECLARE @chof_direccion nvarchar(255) 
-    DECLARE @chof_mail nvarchar(255) 
-    DECLARE @chof_legajo int 
-    DECLARE @chof_dni decimal(18,0) 
-    DECLARE @chof_telefono int 
-    DECLARE @chof_fecha_nac datetime2(3) 
-    DECLARE @chof_costo_hora int 
-
-
-
-    --MODELO
-	DECLARE @mode_nombre nvarchar(255)
-    DECLARE @mode_velocidad_max int 
-    DECLARE @mode_capacidad_tanque int 
-    DECLARE @mode_capacidad_carga int 
-	DECLARE @mode_marca nvarchar(255) 
-
-
-
-    --CAMION
-    DECLARE @cami_patente nvarchar(255) 
-    DECLARE @cami_nro_chasis nvarchar(255) 
-    DECLARE @cami_nro_motor nvarchar(255) 
-    DECLARE @cami_fecha_alta datetime2(3) 
-
-
-
-
-    --ORDEN DE TRABAJO
-    DECLARE @ot_fecha_realizacion nvarchar(255) 
-
-    --MATERIAL POR TAREA
-    DECLARE @mxt_cantidad int 
-
-
-    --MECANICO
-    DECLARE @meca_nombre nvarchar(255) 
-    DECLARE @meca_apellido nvarchar(255) 
-    DECLARE @meca_dni decimal(18,0) 
-    DECLARE @meca_direccion nvarchar(255) 
-    DECLARE @meca_telefono int 
-    DECLARE @meca_mail nvarchar(255) 
-    DECLARE @meca_fechaNac datetime2(3) 
-    DECLARE @meca_costoHora int 
-
-
-    --ORDEN X TAREA
-    DECLARE @otxt_estado_tarea nvarchar(255) 
-    DECLARE @otxt_fecha_inicio_estimada datetime2(3) 
-    DECLARE @otxt_fecha_inicio datetime2(3) 
-    DECLARE @otxt_fecha_fin datetime2(3) 
-    --DECLARE @otxt_tiempo_estimado int  --este es el tiempo real asi que no se agrega ahora
-
-    --VIAJE
-    DECLARE @viaj_fecha_inicio datetime2(7) 
-    DECLARE @viaj_fecha_fin datetime2(3) 
-    DECLARE @viaj_consumo_combustible decimal(18,2) 
-
-    --PAQUETE 
-    DECLARE @paqu_cantidad Int 
-
-
-
-    --DECLARAMOS UN CURSOR QUE NOS SERVIRA PARA MIGRAR LOS DATOS MAS COMODAMENTE
-    
-    DECLARE migracion_cursor cursor for 
-    select MATERIAL_COD,MATERIAL_DESCRIPCION,MATERIAL_PRECIO,
-		   TIPO_TAREA,TAREA_TIEMPO_ESTIMADO,
-		   TALLER_DIRECCION,TALLER_TELEFONO,TALLER_MAIL,TALLER_NOMBRE,TALLER_CIUDAD,
-		   RECORRIDO_CIUDAD_DESTINO,RECORRIDO_CIUDAD_ORIGEN,RECORRIDO_PRECIO,RECORRIDO_KM,
-		   PAQUETE_DESCRIPCION, PAQUETE_PESO_MAX, PAQUETE_ALTO_MAX, PAQUETE_ANCHO_MAX, PAQUETE_LARGO_MAX, PAQUETE_PRECIO,
-		   CHOFER_NOMBRE, CHOFER_APELLIDO, CHOFER_DIRECCION,CHOFER_MAIL,CHOFER_NRO_LEGAJO,CHOFER_DNI,CHOFER_TELEFONO,CHOFER_FECHA_NAC,CHOFER_COSTO_HORA,
-		   MODELO_CAMION,MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA,MARCA_CAMION_MARCA,
-		   CAMION_PATENTE, CAMION_NRO_CHASIS, CAMION_NRO_MOTOR,CAMION_FECHA_ALTA,
-		   ORDEN_TRABAJO_FECHA,
-		   --NO SABEMOS COMO ES LO DE MATERIAL CANTIDAD,
-		   MECANICO_NOMBRE,MECANICO_APELLIDO,MECANICO_DNI,MECANICO_DIRECCION,MECANICO_TELEFONO,MECANICO_MAIL,MECANICO_FECHA_NAC,MECANICO_COSTO_HORA,
-		   ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN,
-		   VIAJE_FECHA_INICIO,VIAJE_FECHA_FIN,VIAJE_CONSUMO_COMBUSTIBLE,
-		   PAQUETE_CANTIDAD
-	from gd_esquema.Maestra
-
-	open migracion_cursor 
-	fetch next from migracion_cursor into
-	  @mate_id, @mate_descripcion,@mate_precio,
-      @tarea_tipo, @tarea_tiempo_estimado ,
-      @tall_direccion, @tall_telefono , @tall_mail , @tall_nombre , @tall_ciudad ,
-      @reco_ciudad_dest , @reco_ciudad_origen ,  @reco_precio ,  @reco_km  ,
-      @tipa_descripcion  ,  @tipa_peso_max ,  @tipa_alto_max ,  @tipa_ancho_max ,  @tipa_largo_max ,  @tipa_precio ,
-      @chof_nombre  , @chof_apellido  ,  @chof_direccion  ,  @chof_mail  , @chof_legajo ,  @chof_dni ,  @chof_telefono  , @chof_fecha_nac ,  @chof_costo_hora ,
-	  @mode_nombre, @mode_velocidad_max  , @mode_capacidad_tanque , @mode_capacidad_carga  , @mode_marca ,
-      @cami_patente , @cami_nro_chasis , @cami_nro_motor , @cami_fecha_alta ,
-      @ot_fecha_realizacion ,
-      @mxt_cantidad ,
-	  @meca_nombre , @meca_apellido , @meca_dni ,    @meca_direccion ,  @meca_telefono ,   @meca_mail , @meca_fechaNac , @meca_costoHora  ,
-      @otxt_estado_tarea , @otxt_fecha_inicio_estimada , @otxt_fecha_inicio , @otxt_fecha_fin ,
-      @viaj_fecha_inicio , @viaj_fecha_fin ,  @viaj_consumo_combustible ,
-      @paqu_cantidad 
-
+	exec brog.migracionMateriales
+	exec brog.migracionTareas
+	exec brog.migracionTaller
+	exec brog.migracionRecorrido
+	exec brog.migracionTipoPaquete
+	exec brog.migracionChofer
+	exec brog.migracionModelo
+	exec brog.migracionCamion
+	exec brog.migracionOrderxTarea
+	exec brog.migracionMaterialxTarea
+	exec brog.migracionMecanico
+	exec brog.migracionOrderxTarea
+	exec brog.migracionViaje
+	exec brog.migracionPaquete
+	exec brog.migracionPaquetexviaje
 end
+GO
 
+exec brog.migracion
 
 --  ----CONSTRAINTS ---->
 
