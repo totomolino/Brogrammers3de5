@@ -1,9 +1,21 @@
 use GD2C2021
-GO
-/****** Object:  Schema [brog]    Script Date: 10/04/2019 1:55:37 ******/
-CREATE SCHEMA [brog]
-GO
+go
 
+
+-- creamos el schema
+
+IF(NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'brog'))
+  BEGIN
+      exec ('CREATE SCHEMA [brog]');
+    END
+
+
+--CREAMOS LAS TABLAS
+
+
+IF OBJECT_ID ('brog.Materiales', 'U') IS NOT NULL  
+   DROP TABLE brog.Materiales; 
+GO
 
 CREATE TABLE [brog].[Materiales] (
   [mate_id] nvarchar(100),
@@ -13,6 +25,9 @@ CREATE TABLE [brog].[Materiales] (
 )
 
 
+IF OBJECT_ID ('brog.Tarea', 'U') IS NOT NULL  
+   DROP TABLE brog.Tarea; 
+GO
 CREATE TABLE [brog].[Tarea] (
   [tare_id] int identity(1,1),
   [tarea_tipo] nvarchar(255) NULL,
@@ -22,7 +37,9 @@ CREATE TABLE [brog].[Tarea] (
 
 
 
-
+IF OBJECT_ID ('brog.Taller', 'U') IS NOT NULL  
+   DROP TABLE brog.Taller; 
+GO
 CREATE TABLE [brog].[Taller] (
   [tall_id] int identity(1,1),
   [tall_direccion] nvarchar(255) NULL,
@@ -33,7 +50,9 @@ CREATE TABLE [brog].[Taller] (
   CONSTRAINT PK_Taller PRIMARY KEY ([tall_id])
 )
 
-
+IF OBJECT_ID ('brog.Recorrido', 'U') IS NOT NULL  
+   DROP TABLE brog.Recorrido; 
+GO
 CREATE TABLE [brog].[Recorrido] (
   [reco_id] int identity(1,1),
   [reco_ciudad_dest] nvarchar(255) NULL,
@@ -44,7 +63,9 @@ CREATE TABLE [brog].[Recorrido] (
 )
 
 
-
+IF OBJECT_ID ('brog.Tipo_paquete', 'U') IS NOT NULL  
+   DROP TABLE brog.Tipo_paquete; 
+GO
 CREATE TABLE [brog].[Tipo_paquete] (
   [tipa_id] int identity(1,1),
   [tipa_descripcion] nvarchar(255) NULL,
@@ -56,6 +77,22 @@ CREATE TABLE [brog].[Tipo_paquete] (
   CONSTRAINT PK_Tipo_paquete PRIMARY KEY ([tipa_id])
 )
 
+IF OBJECT_ID ('brog.PaquetexViaje', 'U') IS NOT NULL  
+   DROP TABLE brog.PaquetexViaje; 
+GO
+CREATE TABLE [brog].[PaquetexViaje] (
+  [paqx_id] int,
+  [paqx_cantidad] Int,
+  [paqx_viaje] int,
+  [paqx_paquete] int,
+  CONSTRAINT PK_PaquetexViaje PRIMARY KEY ([paqx_id])
+);
+
+
+
+IF OBJECT_ID ('brog.Chofer', 'U') IS NOT NULL  
+   DROP TABLE brog.Chofer; 
+GO
 CREATE TABLE [brog].[Chofer] (
   [chof_id] int identity(1,1),
   [chof_nombre] nvarchar(255) NULL,
@@ -70,6 +107,9 @@ CREATE TABLE [brog].[Chofer] (
   CONSTRAINT PK_Chofer PRIMARY KEY ([chof_id])
 )
 
+IF OBJECT_ID ('brog.Modelo', 'U') IS NOT NULL  
+   DROP TABLE brog.Modelo; 
+GO
 CREATE TABLE [brog].[Modelo] (
   [mode_id] int identity(1,1),
   [mode_velocidad_max] int NULL,
@@ -80,7 +120,9 @@ CREATE TABLE [brog].[Modelo] (
   CONSTRAINT PK_Modelo PRIMARY KEY ([mode_id])
 )
 
-
+IF OBJECT_ID ('brog.Camion', 'U') IS NOT NULL  
+   DROP TABLE brog.Camion; 
+GO
 CREATE TABLE [brog].[Camion] (
   [cami_id] int identity(1,1),
   [cami_patente] nvarchar(255) NULL,
@@ -88,28 +130,31 @@ CREATE TABLE [brog].[Camion] (
   [cami_nro_motor] nvarchar(255) NULL,
   [cami_fecha_alta] datetime2(3) NULL,
   [cami_modelo] int,
-  CONSTRAINT PK_Camion PRIMARY KEY ([cami_id]),
-  CONSTRAINT FK_Camion FOREIGN KEY (cami_modelo) REFERENCES brog.Modelo(mode_id)
+  CONSTRAINT PK_Camion PRIMARY KEY ([cami_id])
 )
 
-
+IF OBJECT_ID ('brog.Orden_trabajo', 'U') IS NOT NULL  
+   DROP TABLE brog.Orden_trabajo; 
+GO
 CREATE TABLE [brog].[Orden_trabajo] (
   [ot_id] int identity(1,1),
   [ot_camion] int,
   [ot_fecha_realizacion] nvarchar(255) NULL,
-  CONSTRAINT PK_Orden_trabajo PRIMARY KEY ([ot_id]),
-  CONSTRAINT FK_Orden_trabajo FOREIGN KEY (ot_camion) REFERENCES brog.Camion(cami_id)
+  CONSTRAINT PK_Orden_trabajo PRIMARY KEY ([ot_id])
 )
 
-
+IF OBJECT_ID ('brog.MaterialesXtarea', 'U') IS NOT NULL  
+   DROP TABLE brog.MaterialesXtarea; 
+GO
 CREATE TABLE [brog].[MaterialesXtarea] (
   [mxt_material] nvarchar(100),
   [mxt_tarea] int NULL,
-  [mxt_cantidad] int NULL,
-  CONSTRAINT FK_material FOREIGN KEY (mxt_material) REFERENCES brog.Materiales(mate_id),
-  CONSTRAINT FK_tarea FOREIGN KEY (mxt_tarea) REFERENCES brog.Tarea(tare_id)
+  [mxt_cantidad] int NULL
 )
 
+IF OBJECT_ID ('brog.Mecanico', 'U') IS NOT NULL  
+   DROP TABLE brog.Mecanico; 
+GO
 CREATE TABLE [brog].[Mecanico] (
   [meca_legajo] int identity(1,1),
   [meca_nombre] nvarchar(255) NULL,
@@ -121,11 +166,12 @@ CREATE TABLE [brog].[Mecanico] (
   [meca_fechaNac] datetime2(3) NULL,
   [meca_costoHora] int NULL,
   [meca_taller] int NULL,
-  CONSTRAINT PK_Mecanico PRIMARY KEY ([meca_legajo]),
-  CONSTRAINT FK_Mecanico FOREIGN KEY (meca_taller) REFERENCES brog.Taller(tall_id)
+  CONSTRAINT PK_Mecanico PRIMARY KEY ([meca_legajo])
 )
 
-
+IF OBJECT_ID ('brog.OtXtarea', 'U') IS NOT NULL  
+   DROP TABLE brog.OtXtarea; 
+GO
 CREATE TABLE [brog].[OtXtarea] (
   [otxt_orden_trabajo] int,
   [otxt_tarea] int,
@@ -134,12 +180,12 @@ CREATE TABLE [brog].[OtXtarea] (
   [otxt_fecha_inicio_estimada] datetime2(3) NULL,
   [otxt_fecha_inicio] datetime2(3) NULL,
   [otxt_fecha_fin] datetime2(3) NULL,
-  [otxt_tiempo_real] int NULL,
-  CONSTRAINT FK_OtXorder FOREIGN KEY (otxt_orden_trabajo) REFERENCES brog.Orden_trabajo(ot_id),
-  CONSTRAINT FK_OtXtarea FOREIGN KEY (otxt_tarea) REFERENCES brog.Tarea(tare_id),
-  CONSTRAINT FK_OtXmecanico FOREIGN KEY (otxt_mecanico) REFERENCES brog.Mecanico(meca_legajo)
+  [otxt_tiempo_real] int NULL
 )
 
+IF OBJECT_ID ('brog.Viaje', 'U') IS NOT NULL  
+   DROP TABLE brog.Viaje; 
+GO
 CREATE TABLE [brog].[Viaje] (
   [viaj_id] int identity(1,1),
   [viaj_camion] int,
@@ -148,26 +194,19 @@ CREATE TABLE [brog].[Viaje] (
   [viaj_fecha_inicio] datetime2(7) NULL,
   [viaj_fecha_fin] datetime2(3) NULL,
   [viaj_consumo_combustible] decimal(18,2) NULL,
-  CONSTRAINT PK_Viaje PRIMARY KEY ([viaj_id]),
-  CONSTRAINT FK_Viaje_camion FOREIGN KEY (viaj_camion) REFERENCES brog.Camion(cami_id),
-  CONSTRAINT FK_Viaje_chof FOREIGN KEY (viaj_chof) REFERENCES brog.Chofer(chof_id),
-  CONSTRAINT FK_Viaje_recorrido FOREIGN KEY (viaj_recorrido) REFERENCES brog.Recorrido(reco_id)
+  CONSTRAINT PK_Viaje PRIMARY KEY ([viaj_id])
 )
 
-
+IF OBJECT_ID ('brog.Paquete', 'U') IS NOT NULL  
+   DROP TABLE brog.Paquete; 
+GO
 CREATE TABLE [brog].[Paquete] (
   [paqu_id] int identity(1,1),
-  [paqu_cantidad] Int NULL,
-  [paqu_precio] decimal(18,2) NULL,
-  [paqu_viaje] int,
   [paqu_tipo] int,
-  CONSTRAINT PK_Paquete PRIMARY KEY ([paqu_id]),
-  CONSTRAINT FK_Paquete_viaje FOREIGN KEY (paqu_viaje) REFERENCES brog.Viaje(viaj_id),
-  CONSTRAINT FK_Paquete_tipo FOREIGN KEY (paqu_tipo) REFERENCES brog.Tipo_paquete(tipa_id)
+  CONSTRAINT PK_Paquete PRIMARY KEY ([paqu_id])
 )
 
-ALTER TABLE brog.paquete
-drop column paqu_peso,paqu_alto,paqu_ancho,paqu_largo,paqu_descripcion
+
 
 
 IF OBJECT_ID('migracion','P') IS NOT NULL
@@ -322,9 +361,63 @@ begin
 
 end
 
---CONSTRAINTS ---->
+
+--  ----CONSTRAINTS ---->
 
 
+
+-- FK CAMION
+ALTER TABLE [brog].[Camion]
+ADD CONSTRAINT FK_Camion FOREIGN KEY (cami_modelo) REFERENCES brog.Modelo(mode_id)
+GO
+
+-- FK ORDEN TRABAJO
+ALTER TABLE [brog].[Orden_trabajo] 
+ADD  CONSTRAINT FK_Orden_trabajo FOREIGN KEY (ot_camion) REFERENCES brog.Camion(cami_id)
+GO
+
+-- FK MATERIALESXTAREA
+ALTER TABLE [brog].[MaterialesXtarea] 
+ADD
+  CONSTRAINT FK_material FOREIGN KEY (mxt_material) REFERENCES brog.Materiales(mate_id),
+  CONSTRAINT FK_tarea FOREIGN KEY (mxt_tarea) REFERENCES brog.Tarea(tare_id)
+GO
+
+--FK MECANICO
+ALTER TABLE [brog].[Mecanico] 
+ADD CONSTRAINT FK_Mecanico FOREIGN KEY (meca_taller) REFERENCES brog.Taller(tall_id)
+GO
+
+--FK OTXTAREA
+ALTER TABLE [brog].[OtXtarea] 
+ADD 
+  CONSTRAINT FK_OtXorder FOREIGN KEY (otxt_orden_trabajo) REFERENCES brog.Orden_trabajo(ot_id),
+  CONSTRAINT FK_OtXtarea FOREIGN KEY (otxt_tarea) REFERENCES brog.Tarea(tare_id),
+  CONSTRAINT FK_OtXmecanico FOREIGN KEY (otxt_mecanico) REFERENCES brog.Mecanico(meca_legajo)
+GO
+
+-- FK VIAJE
+ALTER TABLE [brog].[Viaje] 
+ADD 
+  CONSTRAINT FK_Viaje_camion FOREIGN KEY (viaj_camion) REFERENCES brog.Camion(cami_id),
+  CONSTRAINT FK_Viaje_chof FOREIGN KEY (viaj_chof) REFERENCES brog.Chofer(chof_id),
+  CONSTRAINT FK_Viaje_recorrido FOREIGN KEY (viaj_recorrido) REFERENCES brog.Recorrido(reco_id)
+GO
+
+--FK PAQUETE
+ALTER TABLE [brog].[Paquete]
+ADD
+  CONSTRAINT FK_Paquete_tipo FOREIGN KEY (paqu_tipo) REFERENCES brog.Tipo_paquete(tipa_id)
+GO
+
+--FK PAQUETEXVIAJE
+ALTER TABLE [brog].[PaquetexViaje] 
+ADD
+  CONSTRAINT FK_Paqx_viaje FOREIGN KEY (paqx_viaje) REFERENCES brog.Viaje(viaj_id),
+  CONSTRAINT FK_Paqx_paquete FOREIGN KEY (paqu_paquete) REFERENCES brog.Viaje(paqu_id)
+GO
+  
+  
 
 
 
