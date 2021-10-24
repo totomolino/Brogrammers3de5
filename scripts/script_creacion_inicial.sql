@@ -451,8 +451,10 @@ group by TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, otxt_
 ORDER BY TAREA_DESCRIPCION
 
 select * from gd_esquema.Maestra where tipo_tarea <> 'null'
-ORDER BY 
 
+select * from brog.OtXtarea
+--ORDER BY 
+select ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN from gd_esquema.Maestra where ORDEN_TRABAJO_ESTADO <> 'null'
 
 -- MIGRACION VIAJE
 
