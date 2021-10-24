@@ -329,7 +329,7 @@ as
 begin
 	insert into brog.Camion
 	select distinct CAMION_PATENTE, CAMION_NRO_CHASIS, CAMION_NRO_MOTOR,CAMION_FECHA_ALTA, mode_id
-	from gd_esquema.Maestra join Modelo on mode_nombre = MODELO_CAMION
+	from gd_esquema.Maestra join brog.Modelo on mode_nombre = MODELO_CAMION
 	where CAMION_PATENTE <> 'null'
 end
 GO
@@ -345,9 +345,9 @@ as
 begin
 	insert into brog.Orden_trabajo
 	select DISTINCT  cami_id, ORDEN_TRABAJO_FECHA
-	from gd_esquema.Maestra join Camion on cami_patente = CAMION_PATENTE
+	from gd_esquema.Maestra join brog.Camion on cami_patente = CAMION_PATENTE
 	where ORDEN_TRABAJO_FECHA <> 'NULL'
-	
+
 end
 GO
 
@@ -363,13 +363,23 @@ begin
 	insert into brog.MaterialesXtarea
 	select mate_id,tare_id, count(MATERIAL_COD) 
 	from gd_esquema.Maestra 
-	join Tarea on TAREA_DESCRIPCION = tare_desc
-	join Materiales on MATERIAL_DESCRIPCION = mate_descripcion
+	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
+	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
 	where MATERIAL_COD <> 'null'
 	group by mate_id,tare_id	
 end
 GO
 
+select mate_id,tare_id--, count(MATERIAL_COD) 
+from gd_esquema.Maestra 
+	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
+	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
+where MATERIAL_COD <> 'null'
+--group by mate_id,tare_id	
+
+select  TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD  from gd_esquema.Maestra where tipo_tarea <> 'null'
+--group by TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD
+ORDER BY TAREA_DESCRIPCION
 
 -- MIGRACION MECANICO
 
@@ -382,7 +392,7 @@ as
 begin
 	insert into brog.Mecanico
 	select distinct MECANICO_NRO_LEGAJO, MECANICO_NOMBRE, MECANICO_APELLIDO, MECANICO_DNI, MECANICO_DIRECCION, MECANICO_TELEFONO, MECANICO_MAIL, MECANICO_FECHA_NAC, MECANICO_COSTO_HORA, tall_id
-	from gd_esquema.Maestra join Taller on TALLER_NOMBRE = tall_nombre
+	from gd_esquema.Maestra join brog.Taller on TALLER_NOMBRE = tall_nombre
 	where MECANICO_NOMBRE <> 'null'
 	
 end
@@ -390,20 +400,20 @@ GO
 
 -- MIGRACION ORDEN X TAREA
 
-IF OBJECT_ID ('brog.migracionOrderxTarea', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionOrderxTarea; 
+IF OBJECT_ID ('brog.migracionOrdenxTarea', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionOrdenxTarea; 
 GO
 
-create procedure brog.migracionOrderxTarea
+create procedure brog.migracionOrdenxTarea
 as
 begin
 	insert into brog.OtXtarea
 	select distinct ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN), ot_id, tare_id, meca_legajo 
 	from gd_esquema.Maestra
-	join Camion on CAMION_PATENTE = cami_patente 
-	join Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
-	join Tarea on TIPO_TAREA = tare_tipo
-	join Mecanico on MECANICO_NRO_LEGAJO = meca_legajo
+	join brog.Camion on CAMION_PATENTE = cami_patente 
+	join brog.Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
+	join brog.Tarea on TIPO_TAREA = tare_tipo
+	join brog.Mecanico on MECANICO_NRO_LEGAJO = meca_legajo
 	where ORDEN_TRABAJO_ESTADO <> 'null'	
 end
 GO
@@ -421,8 +431,8 @@ begin
 	insert into brog.Viaje
 	select distinct VIAJE_FECHA_INICIO,VIAJE_FECHA_FIN,VIAJE_CONSUMO_COMBUSTIBLE, cami_id, CHOFER_NRO_LEGAJO, reco_id 
 	from gd_esquema.Maestra
-	join Camion on CAMION_PATENTE = cami_patente
-	join Recorrido on RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen and RECORRIDO_PRECIO = reco_precio and RECORRIDO_KM = reco_km -- puse todos xq es posible que se repitan y matchee con cualquiera
+	join brog.Camion on CAMION_PATENTE = cami_patente
+	join brog.Recorrido on RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen and RECORRIDO_PRECIO = reco_precio and RECORRIDO_KM = reco_km -- puse todos xq es posible que se repitan y matchee con cualquiera
 	where VIAJE_FECHA_INICIO IS NOT NULL
 	
 end
@@ -439,7 +449,7 @@ as
 begin
 	insert into brog.Paquete
 	select tipa_id 
-	from gd_esquema.Maestra join Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
+	from gd_esquema.Maestra join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
 	where CHOFER_NOMBRE <> 'null'
 	
 end
@@ -457,10 +467,10 @@ begin
 	insert into brog.Paquetexviaje
 	select viaj_id, paqu_id,sum(PAQUETE_CANTIDAD)
 	from gd_esquema.Maestra 
-	join Camion on CAMION_PATENTE = cami_patente
-	join Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
-	join Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
-	join Paquete on PAQUETE_DESCRIPCION = paqu_id	
+	join brog.Camion on CAMION_PATENTE = cami_patente
+	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
+	join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
+	join brog.Paquete on PAQUETE_DESCRIPCION = paqu_id	
 	group by viaj_id, paqu_id
 end
 GO
@@ -483,10 +493,10 @@ begin
 	exec brog.migracionChofer
 	exec brog.migracionModelo
 	exec brog.migracionCamion
-	exec brog.migracionOrderxTarea
+	exec brog.migracionOT
 	exec brog.migracionMaterialxTarea
 	exec brog.migracionMecanico
-	exec brog.migracionOrderxTarea
+	exec brog.migracionOrdenxTarea
 	exec brog.migracionViaje
 	exec brog.migracionPaquete
 	exec brog.migracionPaquetexviaje
