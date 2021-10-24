@@ -351,36 +351,6 @@ begin
 end
 GO
 
--- MIGRACION MATERIAL POR TAREA
-
-IF OBJECT_ID ('brog.migracionMaterialxTarea', 'P') IS NOT NULL  
-   DROP PROCEDURE brog.migracionMaterialxTarea; 
-GO
-
-create procedure brog.migracionMaterialxTarea
-as
-begin
-	insert into brog.MaterialesXtarea
-	select mate_id,tare_id, count(MATERIAL_COD) 
-	from gd_esquema.Maestra 
-	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
-	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
-	where MATERIAL_COD <> 'null'
-	group by mate_id,tare_id	
-end
-GO
-
-select mate_id,tare_id--, count(MATERIAL_COD) 
-from gd_esquema.Maestra 
-	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
-	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
-where MATERIAL_COD <> 'null'
---group by mate_id,tare_id	
-
-select  TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD  from gd_esquema.Maestra where tipo_tarea <> 'null'
---group by TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD
-ORDER BY TAREA_DESCRIPCION
-
 -- MIGRACION MECANICO
 
 IF OBJECT_ID ('brog.migracionMecanico', 'P') IS NOT NULL  
@@ -408,13 +378,32 @@ create procedure brog.migracionOrdenxTarea
 as
 begin
 	insert into brog.OtXtarea
-	select distinct ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN), ot_id, tare_id, meca_legajo 
+	select distinct ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN), ot_id, tare_id, MECANICO_NRO_LEGAJO 
 	from gd_esquema.Maestra
 	join brog.Camion on CAMION_PATENTE = cami_patente 
 	join brog.Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
 	join brog.Tarea on TIPO_TAREA = tare_tipo
-	join brog.Mecanico on MECANICO_NRO_LEGAJO = meca_legajo
 	where ORDEN_TRABAJO_ESTADO <> 'null'	
+end
+GO
+
+
+-- MIGRACION MATERIAL POR TAREA
+
+IF OBJECT_ID ('brog.migracionMaterialxTarea', 'P') IS NOT NULL  
+   DROP PROCEDURE brog.migracionMaterialxTarea; 
+GO
+
+create procedure brog.migracionMaterialxTarea
+as
+begin
+	insert into brog.MaterialesXtarea
+	select mate_id,tare_id, count(MATERIAL_COD) 
+	from gd_esquema.Maestra 
+	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
+	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
+	where MATERIAL_COD <> 'null'
+	group by mate_id,tare_id	
 end
 GO
 
@@ -494,9 +483,9 @@ begin
 	exec brog.migracionModelo
 	exec brog.migracionCamion
 	exec brog.migracionOT
-	exec brog.migracionMaterialxTarea
 	exec brog.migracionMecanico
 	exec brog.migracionOrdenxTarea
+	exec brog.migracionMaterialxTarea
 	exec brog.migracionViaje
 	exec brog.migracionPaquete
 	exec brog.migracionPaquetexviaje
