@@ -48,6 +48,7 @@ IF OBJECT_ID ('brog.OtXtarea', 'U') IS NOT NULL
    DROP TABLE brog.OtXtarea; 
 GO
 CREATE TABLE [brog].[OtXtarea] (
+  [otxt_id] int identity(1,1) PRIMARY KEY,
   [otxt_estado_tarea] nvarchar(255) NOT NULL,
   [otxt_fecha_inicio_estimada] datetime2(3) NOT NULL,
   [otxt_fecha_inicio] datetime2(3) NOT NULL,
@@ -382,8 +383,9 @@ begin
 	from gd_esquema.Maestra
 	join brog.Camion on CAMION_PATENTE = cami_patente 
 	join brog.Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
-	join brog.Tarea on TIPO_TAREA = tare_tipo
+	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
 	where ORDEN_TRABAJO_ESTADO <> 'null'	
+	order by MECANICO_NRO_LEGAJO, tare_id
 end
 GO
 
@@ -406,6 +408,50 @@ begin
 	group by mate_id,tare_id	
 end
 GO
+
+select tare_id, count(MATERIAL_COD) 
+from gd_esquema.Maestra 
+join brog.Tarea on TAREA_DESCRIPCION = tare_desc
+--join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
+where MATERIAL_COD <> 'null'
+group by tare_id
+
+select TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD from gd_esquema.Maestra where tipo_tarea <> 'null'
+order by TAREA_DESCRIPCION
+
+
+select TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, COUNT(MATERIAL_COD)
+from gd_esquema.Maestra 
+join brog.Camion on CAMION_PATENTE = cami_patente
+join brog.Orden_trabajo on cami_id = ot_camion
+join brog.OtXtarea on (otxt_orden_trabajo = ot_id)
+where TAREA_CODIGO = 1
+group by ot_id, TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD 
+order by TAREA_DESCRIPCION
+
+select TAREA_CODIGO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN,COUNT(MATERIAL_COD), CAMION_PATENTE
+from gd_esquema.Maestra 
+where MATERIAL_COD <> 'null'  AND CAMION_PATENTE = '03W274PV76YDU76O2762SN' AND TAREA_FECHA_INICIO = '2019-01-09 00:00:00.000' AND TAREA_FECHA_FIN = '2019-01-11 00:00:00.000'
+group by TAREA_CODIGO,TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, MECANICO_NRO_LEGAJO, CAMION_PATENTE, MATERIAL_COD, MATERIAL_DESCRIPCION, MATERIAL_PRECIO
+ORDER BY CAMION_PATENTE
+
+select distinct TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO,COUNT(MATERIAL_COD)
+from gd_esquema.Maestra 
+where MATERIAL_COD <> 'null'  AND CAMION_PATENTE = '03W274PV76YDU76O2762SN'
+group by TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD, ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN 
+ORDER BY TAREA_DESCRIPCION
+
+select distinct TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO,COUNT(MATERIAL_COD)
+from gd_esquema.Maestra 
+join brog.Camion on CAMION_PATENTE = cami_patente
+join brog.Orden_trabajo on cami_id = ot_camion
+join brog.OtXtarea on (otxt_orden_trabajo = ot_id)
+where MATERIAL_COD <> 'null'
+group by TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, otxt_id
+ORDER BY TAREA_DESCRIPCION
+
+select * from gd_esquema.Maestra where tipo_tarea <> 'null'
+ORDER BY 
 
 
 -- MIGRACION VIAJE
