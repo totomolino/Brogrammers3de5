@@ -26,7 +26,6 @@ IF OBJECT_ID ('brog.OtXtarea', 'U') IS NOT NULL
 GO
 CREATE TABLE [brog].[OtXtarea] (
   [otxt_id] int identity(1,1) PRIMARY KEY,
-  [otxt_estado_tarea] nvarchar(255) NOT NULL,
   [otxt_fecha_inicio_estimada] datetime2(3) NOT NULL,
   [otxt_fecha_inicio] datetime2(3) NOT NULL,
   [otxt_fecha_fin] datetime2(3) NOT NULL,
@@ -62,8 +61,6 @@ CREATE TABLE [brog].[Viaje] (
 
 
 
-
-
 IF OBJECT_ID ('brog.Orden_trabajo', 'U') IS NOT NULL  
    DROP TABLE brog.Orden_trabajo; 
 GO
@@ -71,6 +68,7 @@ CREATE TABLE [brog].[Orden_trabajo] (
   [ot_id] int identity(1,1),
   [ot_camion] int NOT NULL,
   [ot_fecha_realizacion] nvarchar(255) NOT NULL,
+  [ot_estado] nvarchar(255) NOT NULL,
   CONSTRAINT PK_Orden_trabajo PRIMARY KEY ([ot_id])
 )
 
@@ -352,8 +350,9 @@ create procedure brog.migracionOT
 as
 begin
 	insert into brog.Orden_trabajo
-	select DISTINCT  cami_id, ORDEN_TRABAJO_FECHA
-	from gd_esquema.Maestra join brog.Camion on cami_patente = CAMION_PATENTE
+	select DISTINCT  cami_id, ORDEN_TRABAJO_FECHA, ORDEN_TRABAJO_ESTADO
+	from gd_esquema.Maestra 
+	join brog.Camion on cami_patente = CAMION_PATENTE
 	where ORDEN_TRABAJO_FECHA <> 'NULL'
 
 end
@@ -386,7 +385,7 @@ create procedure brog.migracionOrdenxTarea
 as
 begin
 	insert into brog.OtXtarea
-	select distinct ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN), ot_id, tare_id, MECANICO_NRO_LEGAJO 
+	select distinct TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, DATEDIFF(DAY, TAREA_FECHA_INICIO, TAREA_FECHA_FIN), ot_id, tare_id, MECANICO_NRO_LEGAJO 
 	from gd_esquema.Maestra
 	join brog.Camion on CAMION_PATENTE = cami_patente 
 	join brog.Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
@@ -434,7 +433,7 @@ begin
 	from gd_esquema.Maestra
 	join brog.Camion on CAMION_PATENTE = cami_patente
 	join brog.Recorrido on (RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen ) -- puse todos xq es posible que se repitan y matchee con cualquiera)
-	where VIAJE_FECHA_INICIO IS NOT NULL and CHOFER_NRO_LEGAJO = '110271' and VIAJE_FECHA_INICIO = '2019-12-24 00:00:00.0000000' and VIAJE_FECHA_FIN = '2019-12-25 00:00:00.000'
+	where VIAJE_FECHA_INICIO IS NOT NULL 
 	
 end
 GO
@@ -484,12 +483,13 @@ create procedure brog.migracionPaquetexviaje
 as
 begin
 	insert into brog.Paquetexviaje
-	select viaj_id, tipa_id, sum(PAQUETE_CANTIDAD)
+	select viaj_id, tipa_id, tipa_descripcion , sum(PAQUETE_CANTIDAD)
 	from gd_esquema.Maestra 
 	join brog.Camion on CAMION_PATENTE = cami_patente
 	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and VIAJE_FECHA_FIN = viaj_fecha_fin and viaj_camion = cami_id and CHOFER_NRO_LEGAJO = viaj_chof)
 	join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
 	group by viaj_id, tipa_id, tipa_descripcion
+	order by viaj_id, tipa_id
 end
 GO
 

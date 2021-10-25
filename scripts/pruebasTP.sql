@@ -113,3 +113,4 @@ join brog.Recorrido on (RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRID
 where VIAJE_FECHA_INICIO IS NOT NULL and CHOFER_NRO_LEGAJO = '110271' and VIAJE_FECHA_INICIO = '2019-12-24 00:00:00.0000000' and VIAJE_FECHA_FIN = '2019-12-25 00:00:00.000'
 
 
+select * from gd_esquema.Maestra
