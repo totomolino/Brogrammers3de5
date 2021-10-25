@@ -40,7 +40,7 @@ IF OBJECT_ID ('brog.PaquetexViaje', 'U') IS NOT NULL
 GO
 CREATE TABLE [brog].[PaquetexViaje] (
   [paqx_viaje] int NOT NULL,
-  [paqx_paquete] int NOT NULL,
+  [paqx_tipo] int NOT NULL,
   [paqx_cantidad] Int NOT NULL,
 );
 
@@ -478,13 +478,12 @@ create procedure brog.migracionPaquetexviaje
 as
 begin
 	insert into brog.Paquetexviaje
-	select viaj_id, paqu_id,sum(PAQUETE_CANTIDAD)
+	select viaj_id, tipa_id, sum(PAQUETE_CANTIDAD)
 	from gd_esquema.Maestra 
 	join brog.Camion on CAMION_PATENTE = cami_patente
-	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
+	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and VIAJE_FECHA_FIN = viaj_fecha_fin and viaj_camion = cami_id and CHOFER_NRO_LEGAJO = viaj_chof)
 	join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
-	join brog.Paquete on tipa_id = paqu_tipo
-	group by viaj_id, paqu_id
+	group by viaj_id, tipa_id, tipa_descripcion
 end
 GO
 
@@ -511,7 +510,7 @@ begin
 	exec brog.migracionOrdenxTarea
 	exec brog.migracionMaterialxTarea
 	exec brog.migracionViaje
-	exec brog.migracionPaquete
+--	exec brog.migracionPaquete
 	exec brog.migracionPaquetexviaje
 end
 GO
@@ -556,21 +555,21 @@ GO
 ALTER TABLE [brog].[Viaje] 
 ADD 
   CONSTRAINT FK_Viaje_camion FOREIGN KEY (viaj_camion) REFERENCES brog.Camion(cami_id),
-  CONSTRAINT FK_Viaje_chof FOREIGN KEY (viaj_chof) REFERENCES brog.Chofer(chof_id),
+  CONSTRAINT FK_Viaje_chof FOREIGN KEY (viaj_chof) REFERENCES brog.Chofer(chof_legajo),
   CONSTRAINT FK_Viaje_recorrido FOREIGN KEY (viaj_recorrido) REFERENCES brog.Recorrido(reco_id)
 GO
 
---FK PAQUETE
-ALTER TABLE [brog].[Paquete]
-ADD
-  CONSTRAINT FK_Paquete_tipo FOREIGN KEY (paqu_tipo) REFERENCES brog.Tipo_paquete(tipa_id)
-GO
+----FK PAQUETE
+--ALTER TABLE [brog].[Paquete]
+--ADD
+--  CONSTRAINT FK_Paquete_tipo FOREIGN KEY (paqu_tipo) REFERENCES brog.Tipo_paquete(tipa_id)
+--GO
 
 --FK PAQUETEXVIAJE
 ALTER TABLE [brog].[PaquetexViaje] 
 ADD
   CONSTRAINT FK_Paqx_viaje FOREIGN KEY (paqx_viaje) REFERENCES brog.Viaje(viaj_id),
-  CONSTRAINT FK_Paqx_paquete FOREIGN KEY (paqu_paquete) REFERENCES brog.Viaje(paqu_id)
+  CONSTRAINT FK_Paqx_tipo FOREIGN KEY (paqx_tipo) REFERENCES brog.tipo_paquete(tipa_id)
 GO
   
   
