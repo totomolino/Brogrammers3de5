@@ -434,7 +434,7 @@ begin
 	join brog.Camion on CAMION_PATENTE = cami_patente
 	join brog.Recorrido on (RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen ) -- puse todos xq es posible que se repitan y matchee con cualquiera)
 	where VIAJE_FECHA_INICIO IS NOT NULL 
-	
+	order by CHOFER_NRO_LEGAJO desc, VIAJE_FECHA_INICIO desc
 end
 GO
 
