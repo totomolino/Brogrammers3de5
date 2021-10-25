@@ -21,29 +21,6 @@ CREATE TABLE [brog].[MaterialesXtarea] (
   [mxt_cantidad] int NOT NULL
 )
 
-IF OBJECT_ID ('brog.Viaje', 'U') IS NOT NULL  
-   DROP TABLE brog.Viaje; 
-GO
-CREATE TABLE [brog].[Viaje] (
-  [viaj_id] int identity(1,1),
-  [viaj_fecha_inicio] datetime2(7) NOT NULL,
-  [viaj_fecha_fin] datetime2(3) NOT NULL,
-  [viaj_consumo_combustible] decimal(18,2) NOT NULL,
-  [viaj_camion] int NOT NULL,
-  [viaj_chof] int NOT NULL,
-  [viaj_recorrido] int NOT NULL,
-  CONSTRAINT PK_Viaje PRIMARY KEY ([viaj_id])
-)
-
-IF OBJECT_ID ('brog.PaquetexViaje', 'U') IS NOT NULL  
-   DROP TABLE brog.PaquetexViaje; 
-GO
-CREATE TABLE [brog].[PaquetexViaje] (
-  [paqx_viaje] int NOT NULL,
-  [paqx_tipo] int NOT NULL,
-  [paqx_cantidad] Int NOT NULL,
-);
-
 IF OBJECT_ID ('brog.OtXtarea', 'U') IS NOT NULL  
    DROP TABLE brog.OtXtarea; 
 GO
@@ -58,6 +35,33 @@ CREATE TABLE [brog].[OtXtarea] (
   [otxt_tarea] int NOT NULL,
   [otxt_mecanico] int NOT NULL
 )
+
+IF OBJECT_ID ('brog.PaquetexViaje', 'U') IS NOT NULL  
+   DROP TABLE brog.PaquetexViaje; 
+GO
+CREATE TABLE [brog].[PaquetexViaje] (
+  [paqx_viaje] int NOT NULL,
+  [paqx_tipo] int NOT NULL,
+  [paqx_cantidad] Int NOT NULL,
+);
+
+
+IF OBJECT_ID ('brog.Viaje', 'U') IS NOT NULL  
+   DROP TABLE brog.Viaje; 
+GO
+CREATE TABLE [brog].[Viaje] (
+  [viaj_id] int identity(1,1),
+  [viaj_fecha_inicio] datetime2(7) NOT NULL,
+  [viaj_fecha_fin] datetime2(3) NOT NULL,
+  [viaj_consumo_combustible] decimal(18,2) NOT NULL,
+  [viaj_camion] int NOT NULL,
+  [viaj_chof] int NOT NULL,
+  [viaj_recorrido] int NOT NULL,
+  CONSTRAINT PK_Viaje PRIMARY KEY ([viaj_id])
+)
+
+
+
 
 
 IF OBJECT_ID ('brog.Orden_trabajo', 'U') IS NOT NULL  
@@ -331,7 +335,9 @@ as
 begin
 	insert into brog.Camion
 	select distinct CAMION_PATENTE, CAMION_NRO_CHASIS, CAMION_NRO_MOTOR,CAMION_FECHA_ALTA, mode_id
-	from gd_esquema.Maestra join brog.Modelo on mode_nombre = MODELO_CAMION
+	from gd_esquema.Maestra 
+	join brog.Modelo on (mode_nombre = MODELO_CAMION and MODELO_CAPACIDAD_CARGA = mode_capacidad_carga and MODELO_CAPACIDAD_TANQUE = mode_capacidad_tanque and 
+	MODELO_VELOCIDAD_MAX = mode_velocidad_max)
 	where CAMION_PATENTE <> 'null'
 end
 GO
@@ -427,8 +433,8 @@ begin
 	select distinct VIAJE_FECHA_INICIO,VIAJE_FECHA_FIN,VIAJE_CONSUMO_COMBUSTIBLE, cami_id, CHOFER_NRO_LEGAJO, reco_id 
 	from gd_esquema.Maestra
 	join brog.Camion on CAMION_PATENTE = cami_patente
-	join brog.Recorrido on RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen and RECORRIDO_PRECIO = reco_precio and RECORRIDO_KM = reco_km -- puse todos xq es posible que se repitan y matchee con cualquiera
-	where VIAJE_FECHA_INICIO IS NOT NULL
+	join brog.Recorrido on (RECORRIDO_CIUDAD_DESTINO = reco_ciudad_dest and RECORRIDO_CIUDAD_ORIGEN = reco_ciudad_origen ) -- puse todos xq es posible que se repitan y matchee con cualquiera)
+	where VIAJE_FECHA_INICIO IS NOT NULL and CHOFER_NRO_LEGAJO = '110271' and VIAJE_FECHA_INICIO = '2019-12-24 00:00:00.0000000' and VIAJE_FECHA_FIN = '2019-12-25 00:00:00.000'
 	
 end
 GO
