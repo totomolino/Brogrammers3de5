@@ -390,7 +390,6 @@ begin
 	join brog.Camion on CAMION_PATENTE = cami_patente 
 	join brog.Orden_trabajo on (ot_fecha_realizacion = ORDEN_TRABAJO_FECHA and ot_camion = cami_id)
 	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
-	where ORDEN_TRABAJO_ESTADO <> 'null'	
 	order by MECANICO_NRO_LEGAJO, tare_id
 end
 GO
@@ -412,7 +411,7 @@ begin
 							+convert(varchar, TAREA_FECHA_INICIO_PLANIFICADO)
 							+str(TAREA_TIEMPO_ESTIMADO)+ CAMION_PATENTE)
 	FROM gd_esquema.Maestra
-	WHERE TAREA_CODIGO= G1.TAREA_CODIGO)
+	WHERE TAREA_CODIGO= G1.TAREA_CODIGO and TAREA_DESCRIPCION <> 'null')
 	FROM gd_esquema.Maestra G1 where TAREA_DESCRIPCION <> 'null'
 	group by  TAREA_CODIGO,MATERIAL_COD,MATERIAL_DESCRIPCION
 	order by TAREA_CODIGO	
@@ -483,7 +482,7 @@ create procedure brog.migracionPaquetexviaje
 as
 begin
 	insert into brog.Paquetexviaje
-	select viaj_id, tipa_id, tipa_descripcion , sum(PAQUETE_CANTIDAD)
+	select viaj_id, tipa_id, sum(PAQUETE_CANTIDAD)
 	from gd_esquema.Maestra 
 	join brog.Camion on CAMION_PATENTE = cami_patente
 	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and VIAJE_FECHA_FIN = viaj_fecha_fin and viaj_camion = cami_id and CHOFER_NRO_LEGAJO = viaj_chof)
