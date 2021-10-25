@@ -223,6 +223,7 @@ begin
 end
 go
 
+
 -- MIGRACION TAREAS
 	
 IF OBJECT_ID ('brog.migracionTareas', 'P') IS NOT NULL  
@@ -400,7 +401,11 @@ create procedure brog.migracionMaterialxTarea
 as
 begin
 	insert into brog.MaterialesXtarea
-	SELECT MATERIAL_COD, TAREA_CODIGO, COUNT(MATERIAL_COD) / (select count(distinct convert(varchar,TAREA_FECHA_FIN)+convert(varchar, TAREA_FECHA_INICIO)+convert(varchar, TAREA_FECHA_INICIO_PLANIFICADO)+str(TAREA_TIEMPO_ESTIMADO)+ CAMION_PATENTE)
+	SELECT MATERIAL_COD, TAREA_CODIGO,
+	COUNT(MATERIAL_COD) / (select count(distinct convert(varchar,TAREA_FECHA_FIN)
+							+convert(varchar, TAREA_FECHA_INICIO)
+							+convert(varchar, TAREA_FECHA_INICIO_PLANIFICADO)
+							+str(TAREA_TIEMPO_ESTIMADO)+ CAMION_PATENTE)
 	FROM gd_esquema.Maestra
 	WHERE TAREA_CODIGO= G1.TAREA_CODIGO)
 	FROM gd_esquema.Maestra G1 where TAREA_DESCRIPCION <> 'null'
@@ -460,7 +465,7 @@ begin
 	join brog.Camion on CAMION_PATENTE = cami_patente
 	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
 	join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
-	join brog.Paquete on PAQUETE_DESCRIPCION = paqu_id	
+	join brog.Paquete on tipa_id = paqu_tipo
 	group by viaj_id, paqu_id
 end
 GO
