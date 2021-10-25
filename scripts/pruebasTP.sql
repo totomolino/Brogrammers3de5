@@ -95,3 +95,5 @@ join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and VIAJE_FECHA_FIN =
 join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
 group by viaj_id, tipa_id, tipa_descripcion
 order by viaj_id, tipa_id
+
+select * from brog.Viaje
