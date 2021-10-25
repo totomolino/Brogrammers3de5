@@ -445,7 +445,7 @@ begin
 	insert into brog.Paquete
 	select tipa_id 
 	from gd_esquema.Maestra join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
-	where CHOFER_NOMBRE <> 'null'
+	where PAQUETE_DESCRIPCION <> 'null'
 	
 end
 GO

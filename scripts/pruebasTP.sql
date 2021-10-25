@@ -86,3 +86,12 @@ and tarea_codigo = 1
 group by TAREA_FECHA_FIN, TAREA_FECHA_INICIO,TAREA_FECHA_INICIO_PLANIFICADO,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD, MATERIAL_DESCRIPCION
 --group by MATERIAL_COD, MATERIAL_DESCRIPCION
 
+-- pruebas paquete x viaje
+
+select viaj_id, tipa_id, tipa_descripcion, sum(PAQUETE_CANTIDAD)
+from gd_esquema.Maestra 
+join brog.Camion on CAMION_PATENTE = cami_patente
+join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and VIAJE_FECHA_FIN = viaj_fecha_fin and viaj_camion = cami_id and CHOFER_NRO_LEGAJO = viaj_chof)
+join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
+group by viaj_id, tipa_id, tipa_descripcion
+order by viaj_id, tipa_id
