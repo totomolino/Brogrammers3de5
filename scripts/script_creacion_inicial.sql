@@ -400,61 +400,14 @@ create procedure brog.migracionMaterialxTarea
 as
 begin
 	insert into brog.MaterialesXtarea
-	select mate_id,tare_id, count(MATERIAL_COD) 
-	from gd_esquema.Maestra 
-	join brog.Tarea on TAREA_DESCRIPCION = tare_desc
-	join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
-	where MATERIAL_COD <> 'null'
-	group by mate_id,tare_id	
+	SELECT MATERIAL_COD, TAREA_CODIGO, COUNT(MATERIAL_COD) / (select count(distinct convert(varchar,TAREA_FECHA_FIN)+convert(varchar, TAREA_FECHA_INICIO)+convert(varchar, TAREA_FECHA_INICIO_PLANIFICADO)+str(TAREA_TIEMPO_ESTIMADO)+ CAMION_PATENTE)
+	FROM gd_esquema.Maestra
+	WHERE TAREA_CODIGO= G1.TAREA_CODIGO)
+	FROM gd_esquema.Maestra G1 where TAREA_DESCRIPCION <> 'null'
+	group by  TAREA_CODIGO,MATERIAL_COD,MATERIAL_DESCRIPCION
+	order by TAREA_CODIGO	
 end
 GO
-
-select tare_id, count(MATERIAL_COD) 
-from gd_esquema.Maestra 
-join brog.Tarea on TAREA_DESCRIPCION = tare_desc
---join brog.Materiales on MATERIAL_DESCRIPCION = mate_descripcion
-where MATERIAL_COD <> 'null'
-group by tare_id
-
-select TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD from gd_esquema.Maestra where tipo_tarea <> 'null'
-order by TAREA_DESCRIPCION
-
-
-select TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, COUNT(MATERIAL_COD)
-from gd_esquema.Maestra 
-join brog.Camion on CAMION_PATENTE = cami_patente
-join brog.Orden_trabajo on cami_id = ot_camion
-join brog.OtXtarea on (otxt_orden_trabajo = ot_id)
-where TAREA_CODIGO = 1
-group by ot_id, TAREA_CODIGO ,TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD 
-order by TAREA_DESCRIPCION
-
-select TAREA_CODIGO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN,COUNT(MATERIAL_COD), CAMION_PATENTE
-from gd_esquema.Maestra 
-where MATERIAL_COD <> 'null'  AND CAMION_PATENTE = '03W274PV76YDU76O2762SN' AND TAREA_FECHA_INICIO = '2019-01-09 00:00:00.000' AND TAREA_FECHA_FIN = '2019-01-11 00:00:00.000'
-group by TAREA_CODIGO,TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN, MECANICO_NRO_LEGAJO, CAMION_PATENTE, MATERIAL_COD, MATERIAL_DESCRIPCION, MATERIAL_PRECIO
-ORDER BY CAMION_PATENTE
-
-select distinct TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO,COUNT(MATERIAL_COD)
-from gd_esquema.Maestra 
-where MATERIAL_COD <> 'null'  AND CAMION_PATENTE = '03W274PV76YDU76O2762SN'
-group by TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, MATERIAL_COD, ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN 
-ORDER BY TAREA_DESCRIPCION
-
-select distinct TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO,COUNT(MATERIAL_COD)
-from gd_esquema.Maestra 
-join brog.Camion on CAMION_PATENTE = cami_patente
-join brog.Orden_trabajo on cami_id = ot_camion
-join brog.OtXtarea on (otxt_orden_trabajo = ot_id)
-where MATERIAL_COD <> 'null'
-group by TAREA_CODIGO, TAREA_DESCRIPCION,TIPO_TAREA,TAREA_TIEMPO_ESTIMADO, otxt_id
-ORDER BY TAREA_DESCRIPCION
-
-select * from gd_esquema.Maestra where tipo_tarea <> 'null'
-
-select * from brog.OtXtarea
---ORDER BY 
-select ORDEN_TRABAJO_ESTADO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN from gd_esquema.Maestra where ORDEN_TRABAJO_ESTADO <> 'null'
 
 -- MIGRACION VIAJE
 
@@ -513,11 +466,9 @@ end
 GO
 
 
-IF OBJECT_ID('migracion','P') IS NOT NULL
-DROP PROCEDURE migracion
+IF OBJECT_ID('brog.migracion','P') IS NOT NULL
+DROP PROCEDURE brog.migracion
 GO
-
-
 
 create procedure brog.migracion 
 as
