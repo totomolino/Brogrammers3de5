@@ -102,18 +102,6 @@ CREATE TABLE [brog].[Mecanico] (
   CONSTRAINT PK_Mecanico PRIMARY KEY ([meca_legajo])
 )
 
-
-
-
---IF OBJECT_ID ('brog.Paquete', 'U') IS NOT NULL  
---   DROP TABLE brog.Paquete; 
---GO
---CREATE TABLE [brog].[Paquete] (
---  [paqu_id] int identity(1,1),
---  [paqu_tipo] int NOT NULL,
---  CONSTRAINT PK_Paquete PRIMARY KEY ([paqu_id])
---)
-
 IF OBJECT_ID ('brog.Materiales', 'U') IS NOT NULL  
    DROP TABLE brog.Materiales; 
 GO
@@ -442,42 +430,8 @@ begin
 end
 GO
 
--- MIGRACION PAQUETE
-
---IF OBJECT_ID ('brog.migracionPaquete', 'P') IS NOT NULL  
---   DROP PROCEDURE brog.migracionPaquete; 
---GO
-
---create procedure brog.migracionPaquete
---as
---begin
---	insert into brog.Paquete
---	select tipa_id 
---	from gd_esquema.Maestra join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
---	where PAQUETE_DESCRIPCION <> 'null'
-	
---end
---GO
-
 -- MIGRACION PAQUETE X VIAJE
 
---IF OBJECT_ID ('brog.migracionPaquetexviaje', 'P') IS NOT NULL  
---   DROP PROCEDURE brog.migracionPaquetexviaje; 
---GO
-
---create procedure brog.migracionPaquetexviaje
---as
---begin
---	insert into brog.Paquetexviaje
---	select viaj_id, paqu_id,sum(PAQUETE_CANTIDAD)
---	from gd_esquema.Maestra 
---	join brog.Camion on CAMION_PATENTE = cami_patente
---	join brog.Viaje on (VIAJE_FECHA_INICIO = viaj_fecha_inicio and viaj_camion = cami_id)
---	join brog.Tipo_paquete on PAQUETE_DESCRIPCION = tipa_descripcion
---	join brog.Paquete on tipa_id = paqu_tipo
---	group by viaj_id, paqu_id
---end
---GO
 
 IF OBJECT_ID ('brog.migracionPaquetexviaje', 'P') IS NOT NULL  
    DROP PROCEDURE brog.migracionPaquetexviaje; 
@@ -520,7 +474,6 @@ begin
 	exec brog.migracionOrdenxTarea
 	exec brog.migracionMaterialxTarea
 	exec brog.migracionViaje
---	exec brog.migracionPaquete
 	exec brog.migracionPaquetexviaje
 end
 GO
@@ -569,12 +522,6 @@ ADD
   CONSTRAINT FK_Viaje_recorrido FOREIGN KEY (viaj_recorrido) REFERENCES brog.Recorrido(reco_id)
 GO
 
-----FK PAQUETE
---ALTER TABLE [brog].[Paquete]
---ADD
---  CONSTRAINT FK_Paquete_tipo FOREIGN KEY (paqu_tipo) REFERENCES brog.Tipo_paquete(tipa_id)
---GO
-
 --FK PAQUETEXVIAJE
 ALTER TABLE [brog].[PaquetexViaje] 
 ADD
@@ -583,42 +530,3 @@ ADD
 GO
   
   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
