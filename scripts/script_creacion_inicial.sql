@@ -317,7 +317,12 @@ create procedure brog.migracionModelo
 as
 begin
 	insert into brog.Modelo
-	select distinct MODELO_CAMION, MARCA_CAMION_MARCA, MODELO_VELOCIDAD_MAX,MODELO_CAPACIDAD_TANQUE,MODELO_CAPACIDAD_CARGA from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
+	select distinct MODELO_CAMION,
+					MARCA_CAMION_MARCA,
+					MODELO_VELOCIDAD_MAX,
+					MODELO_CAPACIDAD_TANQUE,
+					MODELO_CAPACIDAD_CARGA 
+	from gd_esquema.Maestra where CHOFER_NOMBRE <> 'null'
 	
 end
 GO
@@ -334,8 +339,8 @@ begin
 	insert into brog.Camion
 	select distinct CAMION_PATENTE, CAMION_NRO_CHASIS, CAMION_NRO_MOTOR,CAMION_FECHA_ALTA, mode_id
 	from gd_esquema.Maestra 
-	join brog.Modelo on (mode_nombre = MODELO_CAMION and MODELO_CAPACIDAD_CARGA = mode_capacidad_carga and MODELO_CAPACIDAD_TANQUE = mode_capacidad_tanque and 
-	MODELO_VELOCIDAD_MAX = mode_velocidad_max)
+	join brog.Modelo on (mode_nombre = MODELO_CAMION and MODELO_CAPACIDAD_CARGA = mode_capacidad_carga and
+	MODELO_CAPACIDAD_TANQUE = mode_capacidad_tanque and	MODELO_VELOCIDAD_MAX = mode_velocidad_max)
 	where CAMION_PATENTE <> 'null'
 end
 GO
