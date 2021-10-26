@@ -114,3 +114,7 @@ where VIAJE_FECHA_INICIO IS NOT NULL and CHOFER_NRO_LEGAJO = '110271' and VIAJE_
 
 
 select * from gd_esquema.Maestra
+
+select paqx_viaje, tipa_descripcion, paqx_cantidad
+from brog.PaquetexViaje join brog.Tipo_paquete on paqx_tipo = tipa_id
+order by paqx_viaje
