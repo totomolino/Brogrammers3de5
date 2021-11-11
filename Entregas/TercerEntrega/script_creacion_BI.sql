@@ -244,10 +244,10 @@ CREATE TABLE [brog].[BI_hecho_arreglo](
   [cami_id] int,
   [meca_legajo] int,
   [marca_id] int,
-  [tiem_id] int  
+  [tiem_id] int 
 )
 
-IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL  
+IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL
    DROP TABLE brog.BI_hecho_envio; 
 GO
 CREATE TABLE [brog].[BI_hecho_envio](
