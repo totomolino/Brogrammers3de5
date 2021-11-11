@@ -225,8 +225,10 @@ order by mode_id
 
 --DIMENSION TIEMPO
 
---insert into brog.BI_tiempo
---select year(), DATEPART(quarter, ) 
+insert into brog.BI_tiempo
+select distinct year(otxt_fecha_inicio), DATEPART(quarter,otxt_fecha_inicio) from brog.OtXtarea
+UNION
+select distinct year(viaj_fecha_inicio), DATEPART(quarter,viaj_fecha_inicio) from brog.Viaje
 
 
 
