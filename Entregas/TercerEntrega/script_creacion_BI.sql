@@ -232,3 +232,25 @@ order by mode_id
 
 -- TABLAS DE HECHO
 
+IF OBJECT_ID ('brog.BI_hecho_arreglo', 'U') IS NOT NULL  
+   DROP TABLE brog.BI_hecho_arreglo; 
+GO
+CREATE TABLE [brog].[BI_hecho_arreglo](
+  [tall_id] int,
+  [mode_id] int,
+  [tare_id] int,
+  [cami_id] int,
+  [meca_legajo] int,
+  [marca_id] int,
+  [tiem_id] int  
+)
+
+IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL  
+   DROP TABLE brog.BI_hecho_envio; 
+GO
+CREATE TABLE [brog].[BI_hecho_envio](
+  [chof_legajo] int,
+  [reco_id] int,
+  [cami_id] int,
+  [tiem_id] int  
+)
