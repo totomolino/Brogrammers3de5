@@ -63,7 +63,7 @@ CREATE TABLE [brog].[BI_Mecanico] (
   [meca_mail] nvarchar(255) NOT NULL,
   [meca_fechaNac] datetime2(3) NOT NULL,
   [meca_costoHora] int NOT NULL,
-  [meca_taller] int NOT NULL,
+--  [meca_taller] int NOT NULL,
   CONSTRAINT PK_Mecanico PRIMARY KEY ([meca_legajo])
 )
 
@@ -244,8 +244,18 @@ CREATE TABLE [brog].[BI_hecho_arreglo](
   [cami_id] int,
   [meca_legajo] int,
   [marca_id] int,
-  [tiem_id] int 
+  [tiem_id] int,
+  [tiempo_arreglo] int 
 )
+
+insert into brog.BI_hecho_arreglo
+select tall_id, mode_id, tare_id, cami_id, meca_legajo, marca_id, tiem_id, otxt_tiempo_real
+from brog.OtXtarea
+join brog.BI_Tipo_Tarea on tare_id = otxt_tarea
+join brog.BI_Mecanico m1 on m1.meca_legajo = otxt_mecanico
+join brog.Mecanico m on m1.meca_legajo = m.meca_legajo
+join brog.BI_Taller on m.meca_taller = tall_id
+
 
 IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL
    DROP TABLE brog.BI_hecho_envio; 
