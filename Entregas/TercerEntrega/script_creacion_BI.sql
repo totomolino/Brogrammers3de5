@@ -328,11 +328,19 @@ IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL
    DROP TABLE brog.BI_hecho_envio; 
 GO
 CREATE TABLE [brog].[BI_hecho_envio](
-  [chof_legajo] int,
-  [reco_id] int,
-  [cami_id] int,
-  [tiem_id] int  
+  [legajo_chof] int,
+  [id_reco] int,
+  [id_cami] int,
+  [id_tiem] int  
 )
+
+insert into brog.BI_hecho_envio
+select viaj_chof, viaj_recorrido, viaj_camion, tiem_id --Los paso directamente desde la tabla viaje
+from brog.Viaje
+join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
+--join brog.BI_Recorrido on viaj_recorrido = reco_id
+--join brog.BI_Chofer on chof_legajo = viaj_chof
+--join brog.BI_Camion on viaj_camion = 
 
 -- CONSTRAINTS
 
@@ -348,7 +356,13 @@ ADD CONSTRAINT FK_BI_taller FOREIGN KEY (id_tall) REFERENCES brog.BI_taller(tall
 	CONSTRAINT FK_BI_material FOREIGN KEY (id_mate) REFERENCES brog.BI_materiales(mate_id)
 GO
 
-
+-- FK HECHO VIAJE
+ALTER TABLE brog.BI_hecho_envio
+ADD CONSTRAINT FK_BI_chofer FOREIGN KEY (legajo_chof) REFERENCES brog.BI_Chofer(chof_legajo),
+	CONSTRAINT FK_BI_recorrido FOREIGN KEY (id_reco) REFERENCES brog.BI_Recorrido(reco_id),
+	CONSTRAINT FK_BI_camion_viaje FOREIGN KEY (id_cami) REFERENCES brog.BI_Camion(cami_id),
+	CONSTRAINT FK_BI_tiempo_viaje FOREIGN KEY (id_tiem) REFERENCES brog.BI_tiempo(tiem_id)
+GO
 
 -- VISTAS
 
@@ -403,7 +417,7 @@ go
 
 create view brog.BI_facturacion_total_x_recorrido
 as
-
+	
 
 go
 
