@@ -423,9 +423,13 @@ go
 
 create view brog.BI_costo_promedio_x_rango_etario_de_choferes
 as
-
+	select (select sum(chof_costo_hora) from brog.BI_Chofer where chof_rango_edad = c.chof_rango_edad)/ count(distinct chof_legajo) from brog.BI_hecho_envio
+	join brog.BI_Chofer c on c.chof_legajo = legajo_chof
+	group by chof_rango_edad
 
 go
+
+
 
 create view brog.BI_ganancia_x_camion
 as
