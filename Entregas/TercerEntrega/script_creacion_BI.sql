@@ -406,9 +406,17 @@ go
 
 create view brog.BI_5_tareas_mas_realizadas_x_modelo_camion
 as
-	
+	select b.id_tare, b.id_mode from brog.BI_hecho_arreglo b
+	where b.id_tare in (select top 5 id_tare 
+	                  from brog.BI_hecho_arreglo
+					  where id_mode = b.id_mode
+					  group by id_mode, id_Tare
+					  order by count(id_tare) desc) 
+	group by b.id_mode,b.id_tare
 
 go
+
+
 
 create view brog.BI_10_materiales_mas_utilizados
 as
