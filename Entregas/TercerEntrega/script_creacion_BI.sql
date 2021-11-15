@@ -412,10 +412,15 @@ go
 
 create view brog.BI_10_materiales_mas_utilizados
 as
-	select top 10 mate_descripcion from brog.BI_hecho_arreglo
-	join brog.BI_Materiales on mate_id = id_mate
-	group by mate_descripcion, id_tall
-	order by count(id_mate) desc
+	select id_mate, id_tall from brog.BI_hecho_arreglo b
+	--join brog.BI_Materiales on mate_id = id_mate
+	where id_mate in (select top 10 id_mate 
+					  from brog.BI_hecho_arreglo 
+					  where id_tall = b.id_tall 
+					  group by id_mate
+					  order by sum(mate_cant) desc )
+	group by id_tall,id_mate
+	--order by sum(mate_cant) desc
 
 go
 
@@ -427,7 +432,7 @@ go
 
 create view brog.BI_costo_promedio_x_rango_etario_de_choferes
 as
-	select (select sum(chof_costo_hora) from brog.BI_Chofer where chof_rango_edad = c.chof_rango_edad)/ count(distinct chof_legajo) from brog.BI_hecho_envio
+	select (select sum(chof_costo_hora) from brog.BI_Chofer where chof_rango_edad = c.chof_rango_edad)/ count(distinct chof_legajo) costo, chof_rango_edad from brog.BI_hecho_envio
 	join brog.BI_Chofer c on c.chof_legajo = legajo_chof
 	group by chof_rango_edad
 
@@ -437,10 +442,14 @@ go
 
 create view brog.BI_ganancia_x_camion
 as
+	select *
+	from brog.BI_hecho_envio
+	join brog.BI_Recorrido on id_reco = reco_id
 
+	
+	group by id_cami
 
 go
 
 
 
-select * from brog.BI_hecho_viaje
