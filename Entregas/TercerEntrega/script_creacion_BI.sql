@@ -1,7 +1,12 @@
 use GD2C2021
 go
 
-
+IF OBJECT_ID ('brog.BI_hecho_arreglo', 'U') IS NOT NULL  
+   DROP TABLE brog.BI_hecho_arreglo; 
+GO
+IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL
+   DROP TABLE brog.BI_hecho_envio; 
+GO
 
 --Funciones
 
@@ -291,9 +296,7 @@ order by mate_id
 
 -- TABLAS DE HECHO
 
-IF OBJECT_ID ('brog.BI_hecho_arreglo', 'U') IS NOT NULL  
-   DROP TABLE brog.BI_hecho_arreglo; 
-GO
+
 CREATE TABLE [brog].[BI_hecho_arreglo](
   [id_tall] int,
   [id_mode] int,
@@ -304,13 +307,15 @@ CREATE TABLE [brog].[BI_hecho_arreglo](
   [id_tiem] int,
   [id_mate] nvarchar(100),
   [tiempo_arreglo] int,
+  [tiempo_estimado] int,
   [mate_cant] int  
 )
 
 insert into brog.BI_hecho_arreglo
-select tall_id, md2.mode_id, tare_id, c2.cami_id, m1.meca_legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, mxt_cantidad
+select distinct tall_id, md2.mode_id, otxt_tarea, c2.cami_id, m1.meca_legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad
 from brog.OtXtarea
 join brog.BI_Tipo_Tarea on tare_id = otxt_tarea
+join brog.Tarea t1 on t1.tare_id = otxt_tarea
 join brog.BI_Mecanico m1 on m1.meca_legajo = otxt_mecanico
 join brog.Mecanico m on m1.meca_legajo = m.meca_legajo
 join brog.BI_Taller on m.meca_taller = tall_id
@@ -321,12 +326,10 @@ join brog.BI_Camion c2 on c.cami_id = c2.cami_id
 join brog.Modelo md1 on md1.mode_id = c.cami_modelo
 join brog.BI_Modelo md2 on md2.mode_id = cami_modelo
 join brog.BI_Marca on md1.mode_marca = marca_nombre
-join brog.MaterialesXtarea on mxt_tarea = tare_id
+join brog.MaterialesXtarea on mxt_tarea = otxt_tarea
 
 
-IF OBJECT_ID ('brog.BI_hecho_envio', 'U') IS NOT NULL
-   DROP TABLE brog.BI_hecho_envio; 
-GO
+
 CREATE TABLE [brog].[BI_hecho_envio](
   [legajo_chof] int,
   [id_reco] int,
@@ -335,7 +338,7 @@ CREATE TABLE [brog].[BI_hecho_envio](
 )
 
 insert into brog.BI_hecho_envio
-select viaj_chof, viaj_recorrido, viaj_camion, tiem_id --Los paso directamente desde la tabla viaje
+select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id --Los paso directamente desde la tabla viaje
 from brog.Viaje
 join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
 --join brog.BI_Recorrido on viaj_recorrido = reco_id
@@ -374,7 +377,7 @@ as
 	from brog.BI_hecho_arreglo
 	join brog.BI_tiempo on id_tiem = tiem_id
 	group by tiem_cuatri,id_cami
-	order by id_cami
+	
 go
 
 
@@ -396,7 +399,8 @@ go
 
 create view brog.BI_desvio_promedio_tarea_x_taller
 as
-	
+	select id_tare, id_tall, avg(abs(tiempo_arreglo - tiempo_estimado)) desvio from brog.BI_hecho_arreglo	
+	group by id_tare, id_tall
 
 go
 
@@ -439,3 +443,4 @@ go
 
 
 
+select * from brog.BI_hecho_viaje
