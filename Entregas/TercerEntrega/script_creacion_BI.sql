@@ -454,7 +454,9 @@ IF OBJECT_ID ('brog.BI_facturacion_total_x_recorrido', 'V') IS NOT NULL
 GO
 create view brog.BI_facturacion_total_x_recorrido
 as
-	
+	select sum(ingresos) facturacionTotal from brog.BI_hecho_envio
+	join brog.BI_tiempo on tiem_id = id_tiem
+	group by id_reco, tiem_cuatri 
 
 go
 
