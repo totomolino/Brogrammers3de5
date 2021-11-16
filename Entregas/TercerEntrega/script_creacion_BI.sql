@@ -454,7 +454,7 @@ IF OBJECT_ID ('brog.BI_facturacion_total_x_recorrido', 'V') IS NOT NULL
 GO
 create view brog.BI_facturacion_total_x_recorrido
 as
-	select sum(ingresos) facturacionTotal from brog.BI_hecho_envio
+	select id_Reco, tiem_cuatri, sum(ingresos) facturacionTotal from brog.BI_hecho_envio
 	join brog.BI_tiempo on tiem_id = id_tiem
 	group by id_reco, tiem_cuatri 
 
@@ -477,7 +477,7 @@ IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL
 GO
 create view brog.BI_ganancia_x_camion
 as
-	select sum(ingresos) - sum((consumo*100)+(tiempo * chof_costo_hora)) ganancia
+	select sum(ingresos) - sum((consumo*100)+(tiempo * chof_costo_hora)) ganancia  --Falta restarle el mantenimiento q no se que es xd
 	from brog.BI_hecho_envio
 	join brog.BI_Chofer on legajo_chof = chof_legajo
 	group by id_cami
