@@ -478,9 +478,12 @@ IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL
 GO
 create view brog.BI_ganancia_x_camion
 as
-	select id_cami, sum(ingresos) - sum((consumo*100)+(tiempoDias * 8 * chof_costo_hora)) ganancia  --Falta restarle el mantenimiento q no se que es xd
-	from brog.BI_hecho_envio
-	join brog.BI_Chofer on legajo_chof = chof_legajo
-	group by id_cami
+	select e.id_cami, sum(e.ingresos) - sum((e.consumo*100)+(e.tiempoDias * 8 * chof_costo_hora)) - sum(mate_cant * mate_precio) + sum( meca_costoHora * 8 * tiempo_arreglo) ganancia  --Falta restarle el mantenimiento q no se que es xd
+	from brog.BI_hecho_envio e
+	join brog.BI_Chofer on e.legajo_chof = chof_legajo
+	join brog.BI_hecho_arreglo a on a.id_cami = e.id_cami
+	join brog.BI_Materiales on a.id_mate = mate_id
+	join brog.BI_Mecanico on meca_legajo = a.legajo_meca
+	group by e.id_cami
 
 go
