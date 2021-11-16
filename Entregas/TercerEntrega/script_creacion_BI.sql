@@ -334,16 +334,21 @@ CREATE TABLE [brog].[BI_hecho_envio](
   [legajo_chof] int,
   [id_reco] int,
   [id_cami] int,
-  [id_tiem] int  
+  [id_tiem] int,
+  [ingresos] decimal(18,2),
+  [consumo] decimal(18,2),
+  [tiempo] int 
 )
 
 insert into brog.BI_hecho_envio
-select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id --Los paso directamente desde la tabla viaje
+select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id, sum(paqx_cantidad * tipa_precio), viaj_consumo_combustible , datediff(hour,viaj_fecha_inicio, viaj_fecha_fin)  --Los paso directamente desde la tabla viaje
 from brog.Viaje
 join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
---join brog.BI_Recorrido on viaj_recorrido = reco_id
---join brog.BI_Chofer on chof_legajo = viaj_chof
---join brog.BI_Camion on viaj_camion = 
+join brog.PaquetexViaje on paqx_viaje = viaj_id
+join brog.Tipo_paquete on paqx_tipo = tipa_id
+join brog.Chofer on viaj_chof = chof_legajo
+group by viaj_chof, viaj_recorrido, viaj_camion, tiem_id, viaj_consumo_combustible,viaj_fecha_inicio, viaj_fecha_fin
+
 
 -- CONSTRAINTS
 
@@ -370,6 +375,9 @@ GO
 -- VISTAS
 
 
+IF OBJECT_ID ('brog.BI_maximo_tiempo_fuera_de_servicio', 'V') IS NOT NULL  
+   DROP view brog.BI_maximo_tiempo_fuera_de_servicio; 
+GO
 create view brog.BI_maximo_tiempo_fuera_de_servicio
 as
 	
@@ -381,7 +389,9 @@ as
 go
 
 
-
+IF OBJECT_ID ('brog.BI_costo_total_mantenimiento_x_camion', 'V') IS NOT NULL  
+   DROP view brog.BI_costo_total_mantenimiento_x_camion; 
+GO
 create view brog.BI_costo_total_mantenimiento_x_camion
 as
 	
@@ -391,12 +401,14 @@ as
 	join brog.BI_Materiales on id_mate = mate_id
 	join brog.BI_Mecanico on meca_legajo = legajo_meca
 	group by id_cami, id_tall, tiem_cuatri
-	order by tiem_cuatri, id_tall, id_cami
+	--order by tiem_cuatri, id_tall, id_cami
 	
 go
 
 
-
+IF OBJECT_ID ('brog.BI_desvio_promedio_tarea_x_taller', 'V') IS NOT NULL  
+   DROP view brog.BI_desvio_promedio_tarea_x_taller; 
+GO
 create view brog.BI_desvio_promedio_tarea_x_taller
 as
 	select id_tare, id_tall, avg(abs(tiempo_arreglo - tiempo_estimado)) desvio from brog.BI_hecho_arreglo	
@@ -404,6 +416,9 @@ as
 
 go
 
+IF OBJECT_ID ('brog.BI_5_tareas_mas_realizadas_x_modelo_camion', 'V') IS NOT NULL  
+   DROP view brog.BI_5_tareas_mas_realizadas_x_modelo_camion; 
+GO
 create view brog.BI_5_tareas_mas_realizadas_x_modelo_camion
 as
 	select b.id_tare, b.id_mode from brog.BI_hecho_arreglo b
@@ -417,7 +432,9 @@ as
 go
 
 
-
+IF OBJECT_ID ('brog.BI_10_materiales_mas_utilizados', 'V') IS NOT NULL  
+   DROP view brog.BI_10_materiales_mas_utilizados; 
+GO
 create view brog.BI_10_materiales_mas_utilizados
 as
 	select id_mate, id_tall from brog.BI_hecho_arreglo b
@@ -432,12 +449,18 @@ as
 
 go
 
+IF OBJECT_ID ('brog.BI_facturacion_total_x_recorrido', 'V') IS NOT NULL  
+   DROP view brog.BI_facturacion_total_x_recorrido; 
+GO
 create view brog.BI_facturacion_total_x_recorrido
 as
 	
 
 go
 
+IF OBJECT_ID ('brog.BI_costo_promedio_x_rango_etario_de_choferes', 'V') IS NOT NULL  
+   DROP view brog.BI_costo_promedio_x_rango_etario_de_choferes; 
+GO
 create view brog.BI_costo_promedio_x_rango_etario_de_choferes
 as
 	select (select sum(chof_costo_hora) from brog.BI_Chofer where chof_rango_edad = c.chof_rango_edad)/ count(distinct chof_legajo) costo, chof_rango_edad from brog.BI_hecho_envio
@@ -447,17 +470,16 @@ as
 go
 
 
-
+IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL  
+   DROP view brog.BI_ganancia_x_camion; 
+GO
 create view brog.BI_ganancia_x_camion
 as
-	select *
+	select sum(ingresos) - sum((consumo*100)+(tiempo * chof_costo_hora)) ganancia
 	from brog.BI_hecho_envio
-	join brog.BI_Recorrido on id_reco = reco_id
-
-	
+	join brog.BI_Chofer on legajo_chof = chof_legajo
 	group by id_cami
 
 go
-
 
 
