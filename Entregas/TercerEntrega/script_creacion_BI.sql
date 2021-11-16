@@ -337,11 +337,11 @@ CREATE TABLE [brog].[BI_hecho_envio](
   [id_tiem] int,
   [ingresos] decimal(18,2),
   [consumo] decimal(18,2),
-  [tiempo] int 
+  [tiempoDias] int 
 )
 
 insert into brog.BI_hecho_envio
-select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id, sum(paqx_cantidad * tipa_precio+reco_precio), viaj_consumo_combustible , datediff(hour,viaj_fecha_inicio, viaj_fecha_fin)  --Los paso directamente desde la tabla viaje
+select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id, sum(paqx_cantidad * tipa_precio+reco_precio), viaj_consumo_combustible , datediff(day,viaj_fecha_inicio, viaj_fecha_fin)  --Los paso directamente desde la tabla viaje
 from brog.Viaje
 join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
 join brog.PaquetexViaje on paqx_viaje = viaj_id
@@ -478,7 +478,7 @@ IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL
 GO
 create view brog.BI_ganancia_x_camion
 as
-	select id_cami, sum(ingresos) - sum((consumo*100)+(tiempo * chof_costo_hora)) ganancia  --Falta restarle el mantenimiento q no se que es xd
+	select id_cami, sum(ingresos) - sum((consumo*100)+(tiempoDias * 8 * chof_costo_hora)) ganancia  --Falta restarle el mantenimiento q no se que es xd
 	from brog.BI_hecho_envio
 	join brog.BI_Chofer on legajo_chof = chof_legajo
 	group by id_cami
