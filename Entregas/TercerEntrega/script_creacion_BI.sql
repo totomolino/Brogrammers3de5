@@ -329,7 +329,6 @@ join brog.BI_Marca on md1.mode_marca = marca_nombre
 join brog.MaterialesXtarea on mxt_tarea = otxt_tarea
 
 
-
 CREATE TABLE [brog].[BI_hecho_envio](
   [legajo_chof] int,
   [id_reco] int,
@@ -396,7 +395,7 @@ GO
 create view brog.BI_costo_total_mantenimiento_x_camion
 as
 	
-	select id_Cami, id_tall, tiem_cuatri, sum(mate_cant * mate_precio) + sum( meca_costoHora * 8 * tiempo_arreglo)  costoTotal
+	select id_Cami, id_tall, tiem_cuatri, sum(mate_cant * mate_precio) + sum( meca_costoHora * 8 * tiempo_arreglo)/ count(distinct id_Tare)  costoTotal
 	from brog.BI_hecho_arreglo
 	join brog.BI_tiempo on id_tiem = tiem_id
 	join brog.BI_Materiales on id_mate = mate_id
