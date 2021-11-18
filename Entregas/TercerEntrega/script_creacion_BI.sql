@@ -273,8 +273,8 @@ order by mode_id
 -- DIMENSION MARCA
 
 insert into brog.BI_Marca
-select mode_marca from brog.Modelo
-order by mode_id
+select distinct mode_marca from brog.Modelo
+
 
 
 
@@ -312,7 +312,7 @@ CREATE TABLE [brog].[BI_hecho_arreglo](
 )
 
 insert into brog.BI_hecho_arreglo
-select distinct tall_id, md2.mode_id, otxt_tarea, c2.cami_id, m1.meca_legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad
+select distinct tall_id, md1.mode_id, otxt_tarea, c.cami_id, m1.meca_legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad
 from brog.OtXtarea
 join brog.BI_Tipo_Tarea on tare_id = otxt_tarea
 join brog.Tarea t1 on t1.tare_id = otxt_tarea
@@ -322,9 +322,7 @@ join brog.BI_Taller on m.meca_taller = tall_id
 join brog.BI_tiempo on year(otxt_fecha_inicio) = tiem_anio and DATEPART(quarter,otxt_fecha_inicio) = tiem_cuatri
 join brog.Orden_trabajo on otxt_orden_trabajo = ot_id
 join brog.Camion c on ot_camion = c.cami_id
-join brog.BI_Camion c2 on c.cami_id = c2.cami_id
 join brog.Modelo md1 on md1.mode_id = c.cami_modelo
-join brog.BI_Modelo md2 on md2.mode_id = cami_modelo
 join brog.BI_Marca on md1.mode_marca = marca_nombre
 join brog.MaterialesXtarea on mxt_tarea = otxt_tarea
 
@@ -395,7 +393,7 @@ GO
 create view brog.BI_costo_total_mantenimiento_x_camion
 as
 	
-	select id_Cami, id_tall, tiem_cuatri, sum(mate_cant * mate_precio) + sum( meca_costoHora * 8 * tiempo_arreglo)/ count(distinct id_Tare)  costoTotal
+	select id_Cami, id_tall, tiem_cuatri, sum(mate_cant * mate_precio) + (sum( meca_costoHora * 8 * tiempo_arreglo)/ count(distinct id_mate))  costoTotal
 	from brog.BI_hecho_arreglo
 	join brog.BI_tiempo on id_tiem = tiem_id
 	join brog.BI_Materiales on id_mate = mate_id
@@ -477,7 +475,7 @@ IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL
 GO
 create view brog.BI_ganancia_x_camion
 as
-	select e.id_cami, sum(e.ingresos) - sum((e.consumo*100)+(e.tiempoDias * 8 * chof_costo_hora)) - sum(mate_cant * mate_precio) + sum( meca_costoHora * 8 * tiempo_arreglo) ganancia  
+	select e.id_cami, sum(e.ingresos) - sum((e.consumo*100)+(e.tiempoDias * 8 * chof_costo_hora)) - sum(mate_cant * mate_precio) + (sum( meca_costoHora * 8 * tiempo_arreglo)/count(distinct mate_id) )ganancia  
 	from brog.BI_hecho_envio e
 	join brog.BI_Chofer on e.legajo_chof = chof_legajo
 	join brog.BI_hecho_arreglo a on a.id_cami = e.id_cami
