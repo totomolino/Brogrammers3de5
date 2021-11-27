@@ -358,14 +358,15 @@ CREATE TABLE [brog].[BI_hecho_envio](
 )
 
 insert into brog.BI_hecho_envio
-select distinct legajo, viaj_recorrido, viaj_camion, tiem_id, (select sum(paqx_cantidad * tipa_precio) + reco_precio from brog.PaquetexViaje join brog.Tipo_paquete on paqx_tipo = tipa_id where paqx_viaje = viaj_id), 
+select distinct legajo, reco_id, cami_id, tiem_id, (select sum(paqx_cantidad * tipa_precio) + reco_precio from brog.PaquetexViaje join brog.Tipo_paquete on paqx_tipo = tipa_id where paqx_viaje = viaj_id), 
 sum(chof_costo_hora)*datediff(day,viaj_fecha_inicio, viaj_fecha_fin)*8 + sum(viaj_consumo_combustible)*100
 from brog.Viaje
 join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
 join brog.BI_rango_etario on legajo = viaj_chof
 join brog.Chofer on viaj_chof = chof_legajo
 join brog.BI_Recorrido on viaj_recorrido = reco_id
-group by legajo, viaj_recorrido, viaj_camion, tiem_id, viaj_id, reco_precio, viaj_fecha_fin, viaj_fecha_inicio
+join brog.BI_Camion on cami_id = viaj_camion
+group by legajo, viaj_recorrido, viaj_camion, tiem_id, viaj_id, reco_precio, viaj_fecha_fin, viaj_fecha_inicio,reco_id, cami_id
 
 
 -- CONSTRAINTS
@@ -399,10 +400,11 @@ GO
 create view brog.BI_maximo_tiempo_fuera_de_servicio
 as
 	
-	select distinct  id_cami Camion , tiem_cuatri Cuatrimestre, max(tiempo_arreglo) tiempoMaximo 
+	select distinct  cami_id camion, cami_patente , tiem_cuatri Cuatrimestre, max(tiempo_arreglo) tiempoMaximo 
 	from brog.BI_hecho_arreglo
 	join brog.BI_tiempo on id_tiem = tiem_id
-	group by tiem_cuatri,id_cami
+	join brog.BI_Camion on id_cami = cami_id
+	group by tiem_cuatri,cami_id, cami_patente
 	
 go
 
