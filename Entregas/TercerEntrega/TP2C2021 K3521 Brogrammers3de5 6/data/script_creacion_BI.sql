@@ -87,25 +87,25 @@ CREATE TABLE [brog].[BI_Camion] (
   CONSTRAINT PK_BI_Camion PRIMARY KEY ([cami_id])
 )
 
---DIMENSION MECANICO
+--DIMENSION MECANICO LA SACAMOS A PEDIDO DE LAS CORRECCIONES, SE REEMPLAZA CON RANGO ETARIO
 
-IF OBJECT_ID ('brog.BI_Mecanico', 'U') IS NOT NULL  
-   DROP TABLE brog.BI_Mecanico; 
-GO
-CREATE TABLE [brog].[BI_Mecanico] (
-  [meca_legajo] int NOT NULL,
-  [meca_nombre] nvarchar(255) NOT NULL,
-  [meca_apellido] nvarchar(255) NOT NULL,
-  [meca_dni] decimal(18,0) NOT NULL,
-  [meca_direccion] nvarchar(255) NOT NULL,
-  [meca_telefono] int NOT NULL,
-  [meca_mail] nvarchar(255) NOT NULL,
-  [meca_fechaNac] datetime2(3) NOT NULL,
-  [meca_costoHora] int NOT NULL,
---  [meca_taller] int NOT NULL,
-  [meca_rango_edad] nvarchar(255) NOT NULL,
-  CONSTRAINT PK_BI_Mecanico PRIMARY KEY ([meca_legajo])
-)
+--IF OBJECT_ID ('brog.BI_Mecanico', 'U') IS NOT NULL  
+--   DROP TABLE brog.BI_Mecanico; 
+--GO
+--CREATE TABLE [brog].[BI_Mecanico] (
+--  [meca_legajo] int NOT NULL,
+--  [meca_nombre] nvarchar(255) NOT NULL,
+--  [meca_apellido] nvarchar(255) NOT NULL,
+--  [meca_dni] decimal(18,0) NOT NULL,
+--  [meca_direccion] nvarchar(255) NOT NULL,
+--  [meca_telefono] int NOT NULL,
+--  [meca_mail] nvarchar(255) NOT NULL,
+--  [meca_fechaNac] datetime2(3) NOT NULL,
+--  [meca_costoHora] int NOT NULL,
+----  [meca_taller] int NOT NULL,
+--  [meca_rango_edad] nvarchar(255) NOT NULL,
+--  CONSTRAINT PK_BI_Mecanico PRIMARY KEY ([meca_legajo])
+--)
 
 --DIMENSION TIPO TAREA
 
@@ -149,24 +149,24 @@ CREATE TABLE [brog].[BI_Recorrido] (
   CONSTRAINT PK_BI_Recorrido PRIMARY KEY ([reco_id])
 )
 
--- DIMENSION CHOFER
+-- DIMENSION CHOFER LA SACAMOS A PEDIDO DE LAS CORRECCIONES, SE REEMPLAZA CON RANGO ETARIO
 
-IF OBJECT_ID ('brog.BI_Chofer', 'U') IS NOT NULL  
-   DROP TABLE brog.BI_Chofer; 
-GO
-CREATE TABLE [brog].[BI_Chofer] (
-  [chof_legajo] int NOT NULL,
-  [chof_nombre] nvarchar(255) NOT NULL,
-  [chof_apellido] nvarchar(255) NOT NULL,
-  [chof_direccion] nvarchar(255) NOT NULL,
-  [chof_mail] nvarchar(255) NOT NULL,
-  [chof_dni] decimal(18,0) NOT NULL,
-  [chof_telefono] int NOT NULL,
-  [chof_fecha_nac] datetime2(3) NOT NULL,
-  [chof_costo_hora] int NOT NULL,
-  [chof_rango_edad] nvarchar(255) NOT NULL,
-  CONSTRAINT PK_BI_Chofer PRIMARY KEY ([chof_legajo])
-)
+--IF OBJECT_ID ('brog.BI_Chofer', 'U') IS NOT NULL  
+--   DROP TABLE brog.BI_Chofer; 
+--GO
+--CREATE TABLE [brog].[BI_Chofer] (
+--  [chof_legajo] int NOT NULL,
+--  [chof_nombre] nvarchar(255) NOT NULL,
+--  [chof_apellido] nvarchar(255) NOT NULL,
+--  [chof_direccion] nvarchar(255) NOT NULL,
+--  [chof_mail] nvarchar(255) NOT NULL,
+--  [chof_dni] decimal(18,0) NOT NULL,
+--  [chof_telefono] int NOT NULL,
+--  [chof_fecha_nac] datetime2(3) NOT NULL,
+--  [chof_costo_hora] int NOT NULL,
+--  [chof_rango_edad] nvarchar(255) NOT NULL,
+--  CONSTRAINT PK_BI_Chofer PRIMARY KEY ([chof_legajo])
+--)
 
 -- DIMENSION MODELO
 
@@ -219,6 +219,17 @@ CREATE TABLE [brog].[BI_Materiales](
   CONSTRAINT PK_BI_Materiales PRIMARY KEY ([mate_id])
 )
 
+--DIMENSION RANGO ETARIO
+
+IF OBJECT_ID ('brog.BI_rango_etario', 'U') IS NOT NULL  
+   DROP TABLE brog.BI_rango_etario; 
+GO
+CREATE TABLE [brog].[BI_rango_etario](
+  [legajo] int NOT NULL,
+  [rango_edad] nvarchar(255) NOT NULL,
+  CONSTRAINT PK_BI_Rango PRIMARY KEY ([legajo])
+)
+
 
 
 --MIGRACION DE DATOS
@@ -231,11 +242,11 @@ select cami_id,cami_patente,cami_nro_chasis,cami_nro_motor,cami_fecha_alta from 
 order by cami_id
 go
 
---DIMENSION MECANICO
+--DIMENSION MECANICO LA SACAMOS A PEDIDO DE LAS CORRECCIONES, SE REEMPLAZA CON RANGO ETARIO
 
-insert into brog.BI_Mecanico
-select meca_legajo, meca_nombre, meca_apellido, meca_dni, meca_direccion, meca_telefono, meca_mail, meca_fechaNac, meca_costoHora, brog.dameRangoEdad(meca_fechaNac) from brog.Mecanico
-order by meca_legajo
+--insert into brog.BI_Mecanico
+--select meca_legajo, meca_nombre, meca_apellido, meca_dni, meca_direccion, meca_telefono, meca_mail, meca_fechaNac, meca_costoHora, brog.dameRangoEdad(meca_fechaNac) from brog.Mecanico
+--order by meca_legajo
 
 
 --DIMENSION TIPO TAREA
@@ -258,11 +269,11 @@ insert into brog.BI_Recorrido
 select reco_id, reco_ciudad_dest, reco_ciudad_origen, reco_precio, reco_km from brog.Recorrido
 order by reco_id
 
--- DIMENSION CHOFER
+-- DIMENSION CHOFER LA SACAMOS A PEDIDO DE LAS CORRECCIONES, SE REEMPLAZA CON RANGO ETARIO
 
-insert into brog.BI_Chofer
-select chof_legajo, chof_nombre, chof_apellido, chof_direccion, chof_mail, chof_dni, chof_telefono, chof_fecha_nac, chof_costo_hora, brog.dameRangoEdad(chof_fecha_nac) from brog.Chofer
-order by chof_legajo
+--insert into brog.BI_Chofer
+--select chof_legajo, chof_nombre, chof_apellido, chof_direccion, chof_mail, chof_dni, chof_telefono, chof_fecha_nac, chof_costo_hora, brog.dameRangoEdad(chof_fecha_nac) from brog.Chofer
+--order by chof_legajo
 
 -- DIMENSION MODELO
 
@@ -293,6 +304,12 @@ select mate_id, mate_descripcion, mate_precio from brog.Materiales
 order by mate_id
 
 
+--DIMENSION RANGO ETARIO
+
+insert into brog.BI_rango_etario
+select chof_legajo, brog.dameRangoEdad(chof_fecha_nac) from brog.BI_Chofer
+union
+select meca_legajo, brog.dameRangoEdad(meca_fechaNac) from brog.BI_Mecanico
 
 -- TABLAS DE HECHO
 
@@ -308,16 +325,18 @@ CREATE TABLE [brog].[BI_hecho_arreglo](
   [id_mate] nvarchar(100),
   [tiempo_arreglo] int,
   [tiempo_estimado] int,
-  [mate_cant] int  
+  [mate_cant] int,
+  [costo_mant] decimal(18,2)  
 )
 
 insert into brog.BI_hecho_arreglo
-select distinct tall_id, md1.mode_id, otxt_tarea, c.cami_id, m1.meca_legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad
+select distinct tall_id, md1.mode_id, otxt_tarea, c.cami_id, r.legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad
+,(select SUM(mat.mate_precio) + SUM(m.meca_costoHora)*otxt_tiempo_real*8 from brog.BI_Materiales mat where mat.mate_id = mat2.mate_id )
 from brog.OtXtarea
 join brog.BI_Tipo_Tarea on tare_id = otxt_tarea
 join brog.Tarea t1 on t1.tare_id = otxt_tarea
-join brog.BI_Mecanico m1 on m1.meca_legajo = otxt_mecanico
-join brog.Mecanico m on m1.meca_legajo = m.meca_legajo
+join brog.BI_rango_etario r on r.legajo = otxt_mecanico
+join brog.Mecanico m on r.legajo = m.meca_legajo
 join brog.BI_Taller on m.meca_taller = tall_id
 join brog.BI_tiempo on year(otxt_fecha_inicio) = tiem_anio and DATEPART(quarter,otxt_fecha_inicio) = tiem_cuatri
 join brog.Orden_trabajo on otxt_orden_trabajo = ot_id
@@ -325,6 +344,8 @@ join brog.Camion c on ot_camion = c.cami_id
 join brog.Modelo md1 on md1.mode_id = c.cami_modelo
 join brog.BI_Marca on md1.mode_marca = marca_nombre
 join brog.MaterialesXtarea on mxt_tarea = otxt_tarea
+join brog.Materiales mat2 on mat2.mate_id = mxt_material
+group by tall_id, md1.mode_id, otxt_tarea, c.cami_id, r.legajo, marca_id, tiem_id, mxt_material, otxt_tiempo_real, tare_tiempo_estimado, mxt_cantidad, mat2.mate_id
 
 
 CREATE TABLE [brog].[BI_hecho_envio](
@@ -333,19 +354,18 @@ CREATE TABLE [brog].[BI_hecho_envio](
   [id_cami] int,
   [id_tiem] int,
   [ingresos] decimal(18,2),
-  [consumo] decimal(18,2),
-  [tiempoDias] int 
+  [costoViaje] decimal(18,2)
 )
 
 insert into brog.BI_hecho_envio
-select distinct viaj_chof, viaj_recorrido, viaj_camion, tiem_id, sum(paqx_cantidad * tipa_precio+reco_precio), viaj_consumo_combustible , datediff(day,viaj_fecha_inicio, viaj_fecha_fin)  --Los paso directamente desde la tabla viaje
+select distinct legajo, viaj_recorrido, viaj_camion, tiem_id, (select sum(paqx_cantidad * tipa_precio) + reco_precio from brog.PaquetexViaje join brog.Tipo_paquete on paqx_tipo = tipa_id where paqx_viaje = viaj_id), 
+sum(chof_costo_hora)*datediff(day,viaj_fecha_inicio, viaj_fecha_fin)*8 + sum(viaj_consumo_combustible)*100
 from brog.Viaje
 join brog.BI_tiempo on year(viaj_fecha_inicio) = tiem_anio and DATEPART(quarter,viaj_fecha_inicio) = tiem_cuatri
-join brog.PaquetexViaje on paqx_viaje = viaj_id
-join brog.Tipo_paquete on paqx_tipo = tipa_id
+join brog.BI_rango_etario on legajo = viaj_chof
 join brog.Chofer on viaj_chof = chof_legajo
 join brog.BI_Recorrido on viaj_recorrido = reco_id
-group by viaj_chof, viaj_recorrido, viaj_camion, tiem_id, viaj_consumo_combustible,viaj_fecha_inicio, viaj_fecha_fin
+group by legajo, viaj_recorrido, viaj_camion, tiem_id, viaj_id, reco_precio, viaj_fecha_fin, viaj_fecha_inicio
 
 
 -- CONSTRAINTS
@@ -356,7 +376,7 @@ ADD CONSTRAINT FK_BI_taller FOREIGN KEY (id_tall) REFERENCES brog.BI_taller(tall
 	CONSTRAINT FK_BI_modelo FOREIGN KEY (id_mode) REFERENCES brog.BI_Modelo(mode_id),
 	CONSTRAINT FK_BI_tarea FOREIGN KEY (id_tare) REFERENCES brog.BI_tipo_tarea(tare_id),
 	CONSTRAINT FK_BI_camion FOREIGN KEY (id_cami) REFERENCES brog.BI_camion(cami_id),
-	CONSTRAINT FK_BI_mecanico FOREIGN KEY (legajo_meca) REFERENCES brog.BI_mecanico(meca_legajo),
+	CONSTRAINT FK_BI_mecanico FOREIGN KEY (legajo_meca) REFERENCES brog.BI_rango_etario(legajo),
 	CONSTRAINT FK_BI_marca FOREIGN KEY (id_marca) REFERENCES brog.BI_marca(marca_id),
 	CONSTRAINT FK_BI_tiempo FOREIGN KEY (id_tiem) REFERENCES brog.BI_tiempo(tiem_id),
 	CONSTRAINT FK_BI_material FOREIGN KEY (id_mate) REFERENCES brog.BI_materiales(mate_id)
@@ -364,7 +384,7 @@ GO
 
 -- FK HECHO VIAJE
 ALTER TABLE brog.BI_hecho_envio
-ADD CONSTRAINT FK_BI_chofer FOREIGN KEY (legajo_chof) REFERENCES brog.BI_Chofer(chof_legajo),
+ADD CONSTRAINT FK_BI_chofer FOREIGN KEY (legajo_chof) REFERENCES brog.BI_rango_etario(legajo),
 	CONSTRAINT FK_BI_recorrido FOREIGN KEY (id_reco) REFERENCES brog.BI_Recorrido(reco_id),
 	CONSTRAINT FK_BI_camion_viaje FOREIGN KEY (id_cami) REFERENCES brog.BI_Camion(cami_id),
 	CONSTRAINT FK_BI_tiempo_viaje FOREIGN KEY (id_tiem) REFERENCES brog.BI_tiempo(tiem_id)
@@ -475,12 +495,12 @@ IF OBJECT_ID ('brog.BI_ganancia_x_camion', 'V') IS NOT NULL
 GO
 create view brog.BI_ganancia_x_camion
 as
-	select e.id_cami, sum(e.ingresos) - sum((e.consumo*100)+(e.tiempoDias * 8 * chof_costo_hora)) - sum(mate_cant * mate_precio) + (sum( meca_costoHora * 8 * tiempo_arreglo)/count(distinct mate_id) )ganancia  
+	select e.id_cami, sum(e.ingresos) - sum(e.costoViaje) - (select sum(costo_mant) from brog.BI_hecho_arreglo b where b.id_cami = e.id_cami)  ganancia  
 	from brog.BI_hecho_envio e
 	join brog.BI_Chofer on e.legajo_chof = chof_legajo
-	join brog.BI_hecho_arreglo a on a.id_cami = e.id_cami
-	join brog.BI_Materiales on a.id_mate = mate_id
-	join brog.BI_Mecanico on meca_legajo = a.legajo_meca
+	--join brog.BI_hecho_arreglo a on a.id_cami = e.id_cami
+	--join brog.BI_Materiales on a.id_mate = mate_id
+	--join brog.BI_Mecanico on meca_legajo = a.legajo_meca
 	group by e.id_cami
 
 go
