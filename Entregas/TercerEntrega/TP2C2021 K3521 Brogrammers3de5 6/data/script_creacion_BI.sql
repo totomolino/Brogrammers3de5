@@ -400,7 +400,7 @@ GO
 create view brog.BI_maximo_tiempo_fuera_de_servicio
 as
 	
-	select distinct  cami_id camion, cami_patente , tiem_cuatri Cuatrimestre, max(tiempo_arreglo) tiempoMaximo 
+	select cami_id camion, cami_patente , tiem_cuatri Cuatrimestre, max(tiempo_arreglo) tiempoMaximo 
 	from brog.BI_hecho_arreglo
 	join brog.BI_tiempo on id_tiem = tiem_id
 	join brog.BI_Camion on id_cami = cami_id
